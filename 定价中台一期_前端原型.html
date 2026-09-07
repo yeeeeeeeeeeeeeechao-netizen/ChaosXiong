@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定价中台一期｜前端原型</title>
+<style>
+:root{
+  --primary:#1677FF; --primary-hover:#4096FF; --primary-bg:#E6F4FF; --primary-bg2:#F0F7FF;
+  --success:#52C41A; --success-bg:#F6FFED; --success-border:#B7EB8F;
+  --warning:#FAAD14; --warning-bg:#FFFBE6; --warning-border:#FFE58F;
+  --danger:#FF4D4F; --danger-bg:#FFF1F0; --danger-border:#FFCCC7;
+  --text:#1F2937; --text-2:#6B7280; --text-3:#9CA3AF; --text-4:#C0C4CC;
+  --border:#E5E7EB; --border-l:#EBEEF5; --th-bg:#FAFAFA; --row-alt:#FBFBFB; --row-hover:#F5F9FF; --row-selected:#E6F4FF;
+  --page-bg:#F5F6FA; --card-bg:#FFFFFF; --nav-bg:#001529; --nav-bg2:#000C17; --nav-text:#FFFFFFB3; --nav-text-active:#FFFFFF; --nav-active:#1677FF;
+  --radius:8px; --radius-s:4px;
+  --shadow:0 1px 2px rgba(0,0,0,.06); --shadow-m:0 2px 8px rgba(0,0,0,.08); --shadow-l:0 6px 16px rgba(0,0,0,.08),0 3px 6px -4px rgba(0,0,0,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;color:var(--text);background:var(--page-bg);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#D9D9D9;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#BFBFBF}
+.mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+
+/* ===== 布局 ===== */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.app-body{display:flex;flex:1;overflow:hidden}
+
+/* 顶部一级导航栏（白底，与列表一致） */
+.topnav{height:48px;background:var(--card-bg);display:flex;align-items:center;flex-shrink:0;z-index:20;border-bottom:1px solid var(--border-l)}
+.topnav-brand{display:flex;align-items:center;gap:8px;padding:0 16px;height:100%;flex-shrink:0}
+.topnav-brand .brand-img{height:32px;width:auto;display:block}
+.topnav-brand .brand-logo{width:26px;height:26px;border-radius:5px;background:linear-gradient(135deg,#1677FF,#4096FF);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.topnav-brand .brand-text{color:var(--text);font-size:15px;font-weight:600;white-space:nowrap}
+.topnav-scroll{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;align-items:stretch;height:100%;scrollbar-width:none}
+.topnav-scroll::-webkit-scrollbar{display:none}
+.topnav-item{display:flex;align-items:center;padding:0 16px;height:100%;cursor:pointer;font-size:14px;color:var(--text-2);white-space:nowrap;position:relative;transition:all .15s;text-decoration:none}
+.topnav-item:hover{color:var(--primary);background:var(--primary-bg2)}
+.topnav-item.active{color:var(--primary);background:var(--primary-bg);font-weight:600}
+.topnav-item.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--primary)}
+
+/* 左侧二级导航（白底，与列表一致） */
+.sidebar{width:200px;background:var(--card-bg);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;border-right:1px solid var(--border-l);transition:width .2s}
+.sidebar.collapsed{width:0;border-right:none}
+.sidebar-head{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border-l);flex-shrink:0}
+.sidebar-head .sh-t{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.sidebar-head .sh-t .ic{color:var(--primary)}
+.sidebar-head .collapse-btn{cursor:pointer;color:var(--text-3);font-size:14px;line-height:1;padding:4px;border-radius:var(--radius-s);border:1px solid var(--border)}
+.sidebar-head .collapse-btn:hover{color:var(--primary);border-color:var(--primary)}
+.nav-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0}
+.nav-scroll::-webkit-scrollbar{width:6px}
+.nav-scroll::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:3px}
+.sub-group-title{padding:12px 16px 4px;font-size:11px;color:var(--text-3);letter-spacing:.5px}
+.sub-item{padding:0 16px 0 24px;height:36px;line-height:36px;font-size:13px;cursor:pointer;color:var(--text-2);white-space:nowrap;transition:all .15s;position:relative;display:flex;align-items:center;gap:6px}
+.sub-item:hover{color:var(--primary);background:var(--primary-bg2)}
+.sub-item.active{color:var(--primary);background:var(--primary-bg);font-weight:600}
+.sub-item.active::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary)}
+.sub-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0}
+.sub-item.nav-strike{text-decoration:line-through;color:var(--text-3)}
+.sidebar-foot{padding:10px 16px;border-top:1px solid var(--border-l);flex-shrink:0;display:flex;align-items:center;gap:8px}
+.sidebar-foot .avatar{width:26px;height:26px;font-size:11px}
+.sidebar-foot .sf-info{flex:1;min-width:0}
+.sidebar-foot .sf-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-foot .sf-role{font-size:11px;color:var(--text-3)}
+
+/* 主区 */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:56px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border-l);flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.03);z-index:5}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.collapse-btn{cursor:pointer;font-size:18px;color:var(--text-2);width:24px;text-align:center}
+.collapse-btn:hover{color:var(--primary)}
+.breadcrumb{font-size:13px;color:var(--text-2)}
+.breadcrumb b{color:var(--text);font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:16px;color:var(--text-2)}
+.topbar-icon{cursor:pointer;font-size:16px;position:relative}
+.topbar-icon:hover{color:var(--primary)}
+.badge-dot{position:absolute;top:-4px;right:-6px;background:var(--danger);color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.user-chip{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:var(--radius-s)}
+.user-chip:hover{background:var(--page-bg)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1677FF,#722ED1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.content{flex:1;overflow:auto;padding:16px 24px 24px}
+.page-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:18px;font-weight:600;color:var(--text)}
+.page-subtitle{font-size:12px;color:var(--text-2);margin-top:2px}
+.page-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* 卡片 */
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card+.card{margin-top:12px}
+.card-pad{padding:16px}
+.card-title{font-size:14px;font-weight:600;padding:12px 16px;border-bottom:1px solid var(--border-l);display:flex;align-items:center;justify-content:space-between}
+
+/* 提示条 */
+.tip-bar{padding:8px 12px;border-radius:var(--radius-s);font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.tip-bar.info{background:var(--primary-bg);color:var(--primary)}
+.tip-bar.warning{background:var(--warning-bg);color:var(--warning)}
+.tip-bar.danger{background:var(--danger-bg);color:var(--danger)}
+.tip-bar.success{background:var(--success-bg);color:var(--success)}
+
+/* 查询区 */
+.query-bar{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px}
+.query-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;user-select:none}
+.query-toggle .qt-l{font-size:13px;font-weight:600;color:var(--text)}
+.query-body{padding:0 16px 16px;border-top:1px dashed var(--border-l)}
+.query-body.show{display:block}
+.query-body.hide{display:none}
+.query-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 16px;margin-top:12px}
+.query-item{display:flex;align-items:center;gap:8px}
+.query-item label{font-size:13px;color:var(--text-2);white-space:nowrap;min-width:max-content}
+.query-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.query-actions .grow{flex:1}
+
+/* 表单控件 */
+.input,.select{height:30px;border:1px solid var(--border);border-radius:var(--radius-s);padding:0 10px;font-size:13px;background:#fff;color:var(--text);flex:1;min-width:0;transition:all .15s}
+.input:hover,.select:hover{border-color:var(--primary-hover)}
+.input:focus,.select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,119,255,.1)}
+select.select{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%239CA3AF' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:26px;cursor:pointer}
+.input::placeholder{color:var(--text-4)}
+textarea.input{height:auto;padding:6px 10px;resize:vertical;line-height:1.5}
+
+/* 按钮 */
+.btn{height:30px;padding:0 14px;border:1px solid var(--border);border-radius:var(--radius-s);background:#fff;color:var(--text);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;line-height:1}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);color:#fff}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn-danger:hover{opacity:.9;color:#fff}
+.btn-link{background:none;border:none;color:var(--primary);padding:0 4px;height:auto;font-size:13px}
+.btn-link:hover{color:var(--primary-hover);background:none}
+.btn-link.danger{color:var(--danger)}
+.btn-link.muted{color:var(--text-2)}
+.btn-link.muted:hover{color:var(--text)}
+.btn-sm{height:24px;padding:0 8px;font-size:12px}
+.btn-ghost{background:transparent;border:none;color:var(--text-2)}
+.btn-ghost:hover{color:var(--primary)}
+.btn[disabled]{background:#F5F5F5;color:var(--text-4);border-color:var(--border-l);cursor:not-allowed}
+.btn[disabled]:hover{background:#F5F5F5;color:var(--text-4);border-color:var(--border-l)}
+
+/* 批量操作栏 */
+.batch-bar{background:var(--primary-bg);border:1px solid #BAE0FF;border-radius:var(--radius-s);padding:0 16px;height:40px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;transition:all .2s}
+.batch-bar.hide{display:none}
+.batch-bar .bl{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--primary)}
+.batch-bar .bl .ops{display:flex;gap:8px}
+.batch-bar .ops .btn{background:#fff;height:26px}
+
+/* Tab */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border-l);margin-bottom:12px;background:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:0 8px}
+.tab{padding:10px 16px;font-size:14px;cursor:pointer;color:var(--text-2);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--primary)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab .count{font-size:12px;color:var(--text-3);margin-left:4px;background:var(--th-bg);padding:1px 7px;border-radius:10px}
+.tab.active .count{background:var(--primary-bg);color:var(--primary)}
+
+/* 表格 */
+.table-wrap{background:#fff;border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow);overflow:hidden}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{background:var(--th-bg);font-weight:600;color:var(--text);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border-l);white-space:nowrap;position:sticky;top:0;z-index:1}
+table.tbl td{padding:9px 12px;border-bottom:1px solid var(--border-l);color:var(--text);vertical-align:middle}
+table.tbl tbody tr{transition:background .1s}
+table.tbl tbody tr:hover{background:var(--row-hover)}
+table.tbl tbody tr.selected{background:var(--row-selected)}
+table.tbl tbody tr.expanded-row{background:var(--th-bg)}
+table.tbl tbody tr.expanded-row:hover{background:var(--row-hover)}
+table.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+table.tbl .center{text-align:center}
+.cell-main{font-weight:500;color:var(--text)}
+.cell-sub{font-size:12px;color:var(--text-3);margin-top:2px}
+.cell-stack{display:flex;flex-direction:column;gap:2px}
+.cell-stack .v2{color:var(--text-2);font-size:12px}
+.tbl-link{color:var(--primary);cursor:pointer}
+.tbl-link:hover{text-decoration:underline}
+.expand-toggle{cursor:pointer;color:var(--text-3);user-select:none;display:inline-block;width:16px;text-align:center}
+.expand-toggle.open{color:var(--primary)}
+.sub-detail{background:var(--page-bg);padding:16px}
+.sub-detail-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;padding-left:4px}
+.kv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border-radius:var(--radius-s);overflow:hidden;border:1px solid var(--border-l)}
+.kv-grid .kv{padding:8px 12px;border-right:1px solid var(--border-l);border-bottom:1px solid var(--border-l)}
+.kv-grid .kv:nth-child(4n){border-right:none}
+.kv-grid .kv .k{font-size:12px;color:var(--text-3);margin-bottom:2px}
+.kv-grid .kv .v{font-size:13px;color:var(--text);font-weight:500}
+.kv-grid .kv .v.num{font-variant-numeric:tabular-nums}
+
+/* 费用明细子表（横向表格） */
+.fee-sub{border:1px solid var(--border);border-radius:var(--radius-s);overflow:hidden;background:#fff}
+.fee-sub table{width:100%;border-collapse:collapse;font-size:13px}
+.fee-sub th{background:#E6F4FF;color:var(--primary);font-weight:700;padding:9px 12px;text-align:right;border-right:1px solid var(--border-l);border-bottom:1px solid var(--border-l);white-space:nowrap;font-size:13px}
+.fee-sub th.left{text-align:left}
+.fee-sub th:last-child{border-right:none}
+.fee-sub td{padding:9px 12px;border-right:1px solid var(--border-l);border-bottom:1px solid var(--border-l);text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+.fee-sub td.left{text-align:left;font-weight:500;color:var(--text-2)}
+.fee-sub td:last-child{border-right:none}
+.fee-sub tbody tr:last-child td{border-bottom:none}
+.fee-sub td.cny{color:#FA541C;font-weight:700}      /* CNY 金额：橙红 */
+.fee-sub td.pct{color:var(--primary);font-weight:700} /* 百分比：主蓝 */
+.fee-sub td.rate{color:#722ED1;font-weight:700}      /* 汇率：紫 */
+.fee-sub td.empty{color:var(--text-4);font-weight:400}
+.fee-sub .cur{font-size:11px;font-weight:500;color:var(--text-3);margin-left:2px}
+
+/* 日志查询区（抽屉内） */
+.log-query{background:var(--page-bg);border-radius:var(--radius-s);padding:12px;margin-bottom:12px}
+.log-query .lq-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.log-query .lq-item{display:flex;align-items:center;gap:8px}
+.log-query .lq-item label{font-size:13px;color:var(--text-2);white-space:nowrap;min-width:max-content}
+.log-query .lq-item .input,.log-query .lq-item .select{flex:1;min-width:0}
+.log-query .lq-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
+/* 分页 */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;font-size:13px;color:var(--text-2)}
+.pagination .pg-r{display:flex;align-items:center;gap:4px}
+.pg-btn{min-width:28px;height:28px;border:1px solid var(--border);background:#fff;border-radius:var(--radius-s);cursor:pointer;font-size:13px;color:var(--text);padding:0 6px}
+.pg-btn:hover{border-color:var(--primary);color:var(--primary)}
+.pg-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.pg-btn[disabled]{color:var(--text-4);cursor:not-allowed;background:#FAFAFA}
+.pg-size{padding:0 8px}
+
+/* Tag */
+.tag{display:inline-flex;align-items:center;padding:0 8px;height:22px;border-radius:var(--radius-s);font-size:12px;line-height:1;border:1px solid transparent;white-space:nowrap}
+.tag.success{background:var(--success-bg);color:var(--success);border-color:var(--success-border)}
+.tag.warning{background:var(--warning-bg);color:var(--warning);border-color:var(--warning-border)}
+.tag.danger{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
+.tag.info{background:var(--primary-bg);color:var(--primary);border-color:#BAE0FF}
+.tag.default{background:#FAFAFA;color:var(--text-2);border-color:var(--border-l)}
+.tag.purple{background:#F9F0FF;color:#722ED1;border-color:#D3ADF7}
+.tag.cyan{background:#E6FFFB;color:#13C2C2;border-color:#87E8DE}
+.tag.orange{background:#FFF7E6;color:#FA8C16;border-color:#FFD591}
+.tag-group{display:flex;gap:4px;flex-wrap:wrap}
+.nowrap .tag-group{flex-wrap:nowrap}
+.fee-sub .cat-row th{background:#ececec;color:var(--text-2);font-weight:600}
+
+/* Modal */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding-top:8vh}
+.modal-mask.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-l);width:640px;max-width:92vw;max-height:84vh;display:flex;flex-direction:column;animation:mIn .2s}
+.modal.w480{width:480px}.modal.w720{width:720px}.modal.w880{width:880px}
+.modal-body .table-wrap{overflow-x:auto}
+@keyframes mIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+.modal-header{padding:14px 20px;border-bottom:1px solid var(--border-l);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{cursor:pointer;color:var(--text-3);font-size:18px;width:24px;text-align:center;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px;overflow:auto;flex:1}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border-l);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:#FAFAFA;border-radius:0 0 var(--radius) var(--radius)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.form-grid .full{grid-column:1/-1}
+.form-item label{display:block;font-size:13px;color:var(--text);margin-bottom:5px}
+.form-item label .req{color:var(--danger);margin-right:2px}
+.form-item .hint{font-size:12px;color:var(--text-3);margin-top:4px;line-height:1.4}
+.form-item .input,.form-item .select{width:100%;flex:none}
+.form-section-title{font-size:13px;font-weight:600;color:var(--text);margin:4px 0 10px;padding-left:8px;border-left:3px solid var(--primary)}
+.calc-step{background:var(--page-bg);border-radius:var(--radius-s);padding:10px 14px;margin-bottom:8px;font-size:13px;font-family:"SF Mono",Menlo,monospace;line-height:1.7}
+.calc-step .lbl{color:var(--text-3);margin-right:6px}
+.calc-step .val{color:var(--primary);font-weight:600}
+.calc-final{background:var(--primary-bg);border:1px solid #BAE0FF;color:var(--primary);font-size:16px;font-weight:700;text-align:center;padding:12px;border-radius:var(--radius-s);margin-top:8px}
+
+/* Drawer */
+.drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:900;display:none}
+.drawer-mask.show{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:720px;max-width:92vw;background:#fff;z-index:901;box-shadow:-6px 0 16px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+.drawer.show{transform:none}
+.drawer-header{padding:14px 20px;border-bottom:1px solid var(--border-l);display:flex;align-items:center;justify-content:space-between;background:#FAFAFA;flex-shrink:0}
+.drawer-body{padding:20px;overflow:auto;flex:1}
+.dsection{margin-bottom:20px}
+.dsection-title{font-size:13px;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border-l);display:flex;align-items:center;gap:6px}
+.steps{display:flex;align-items:center;margin:8px 0 4px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px}
+.step-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.step-dot.done{background:var(--success);color:#fff}
+.step-dot.current{background:#fff;border:2px solid var(--primary);color:var(--primary);font-weight:700}
+.step-dot.wait{background:#fff;border:2px solid var(--border);color:var(--text-3)}
+.step-dot.error{background:var(--danger);color:#fff}
+.step-label{font-size:12px;color:var(--text-2)}
+.step-line{width:32px;height:2px;background:var(--border);margin:0 6px}
+.step-line.done{background:var(--success)}
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--border-l)}
+.tl-item{position:relative;padding-bottom:14px}
+.tl-item::before{content:"";position:absolute;left:-18px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid #fff;box-shadow:0 0 0 1px var(--primary)}
+.tl-time{font-size:12px;color:var(--text-3)}
+.tl-content{font-size:13px;color:var(--text);margin-top:2px}
+.tl-user{font-size:12px;color:var(--text-2);margin-top:2px}
+
+/* toast */
+.toast-wrap{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#fff;border-radius:var(--radius-s);box-shadow:var(--shadow-l);padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:8px;min-width:240px;animation:tIn .2s;border-left:3px solid var(--primary)}
+.toast.success{border-left-color:var(--success)}
+.toast.warning{border-left-color:var(--warning)}
+.toast.error{border-left-color:var(--danger)}
+.toast .ic{font-size:16px}
+.toast.success .ic{color:var(--success)}
+.toast.warning .ic{color:var(--warning)}
+.toast.error .ic{color:var(--danger)}
+.toast.info .ic{color:var(--primary)}
+@keyframes tIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+/* 空状态 */
+.empty{padding:48px 16px;text-align:center;color:var(--text-3)}
+.empty .ic{font-size:48px;color:var(--text-4);margin-bottom:12px}
+.empty .t{font-size:14px;color:var(--text-2);margin-bottom:8px}
+.empty .d{font-size:12px;color:var(--text-3);margin-bottom:12px}
+
+/* checkbox */
+.ckb{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;vertical-align:middle}
+
+/* radio */
+.rdo{width:14px;height:14px;accent-color:var(--primary);cursor:pointer;vertical-align:middle}
+
+/* 操作列 */
+.row-actions{display:flex;gap:2px;align-items:center;flex-wrap:wrap}
+.row-actions .btn-link{font-size:13px}
+.divider{display:inline-block;width:1px;height:12px;background:var(--border);margin:0 4px;vertical-align:middle}
+
+/* mini偏差 */
+.deviation{font-size:13px;font-weight:600}
+.deviation.up{color:var(--success)}
+.deviation.down{color:var(--danger)}
+.deviation.flat{color:var(--text-2)}
+
+/* radio card 动作 */
+.action-radio{display:flex;gap:10px;flex-wrap:wrap}
+.action-opt{flex:1;min-width:140px;border:1px solid var(--border);border-radius:var(--radius-s);padding:12px;cursor:pointer;transition:all .15s;position:relative}
+.action-opt:hover{border-color:var(--primary)}
+.action-opt.sel{border-color:var(--primary);background:var(--primary-bg)}
+.action-opt .ao-t{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.action-opt.sel .ao-t{color:var(--primary)}
+.action-opt .ao-d{font-size:12px;color:var(--text-3);margin-top:4px;line-height:1.4}
+
+/* weight段表 */
+.weight-segs{border:1px solid var(--border-l);border-radius:var(--radius-s);overflow:hidden;margin-top:6px}
+.weight-segs table{width:100%;border-collapse:collapse;font-size:12px}
+.weight-segs th{background:var(--th-bg);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border-l);font-weight:600}
+.weight-segs td{padding:6px 8px;border-bottom:1px solid var(--border-l)}
+.weight-segs .input{height:26px;padding:0 6px}
+.weight-segs .del{color:var(--danger);cursor:pointer}
+.calc-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.calc-tbl th{background:var(--th-bg);padding:6px 8px;text-align:left;border:1px solid var(--border-l);font-weight:600}
+.calc-tbl td{padding:8px;border:1px solid var(--border-l);vertical-align:top}
+.calc-tbl .del{color:var(--danger);cursor:pointer;font-size:12px}
+/* 其他配置:左侧Tab + 页内直接编辑 */
+.conf-wrap{display:flex;gap:12px;align-items:flex-start}
+.conf-nav{width:180px;background:#fff;border:1px solid var(--border-l);border-radius:var(--radius-s);padding:6px 0;flex-shrink:0}
+.conf-nav-item{padding:10px 14px;font-size:13px;cursor:pointer;border-left:3px solid transparent;color:var(--text-2)}
+.conf-nav-item:hover{color:var(--primary)}
+.conf-nav-item.active{border-left-color:var(--primary);background:var(--th-bg);color:var(--primary);font-weight:600}
+.conf-panel{flex:1;background:#fff;border:1px solid var(--border-l);border-radius:var(--radius-s);padding:14px;min-width:0}
+.conf-panel .tbl .input{height:26px;padding:0 6px}
+.range-cell{display:flex;align-items:center;gap:4px}
+.ck-inline{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--text-2);cursor:pointer;margin-right:6px}
+.ms-drop{position:relative}
+.ms-toggle{height:26px;padding:0 8px;border:1px solid #f0f0f0;border-radius:3px;font-size:13px;color:#262626;background:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-width:76px;justify-content:center}
+.ms-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:60;background:#fff;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.12);padding:8px 10px;white-space:nowrap}
+.ms-drop.open .ms-menu{display:block}
+.ms-opt{padding:5px 14px;font-size:13px;color:#262626;cursor:pointer;border-radius:3px}
+.ms-opt:hover{background:var(--th-bg)}
+.ms-opt.sel{color:var(--primary);font-weight:600}
+.form-item .ms-drop .ms-toggle{width:100%;min-width:0;justify-content:space-between}
+.sw{display:inline-block;width:34px;height:18px;border-radius:9px;background:#d9d9d9;position:relative;cursor:pointer;transition:background .2s;vertical-align:middle}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on{background:var(--success)}
+.sw.on::after{left:18px}
+.tag-pop{position:relative;cursor:help}
+.tag-pop .tag-pop-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#262626;color:#fff;font-size:12px;line-height:1.8;padding:6px 12px;border-radius:4px;white-space:nowrap;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.18);text-align:left}
+.tag-pop:hover .tag-pop-tip{display:block}
+
+/* 页面隐藏 */
+.page{display:none}
+.page.active{display:block}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.text-right{text-align:right}
+.text-muted{color:var(--text-3)}
+.small{font-size:12px}
+.nowrap{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== 顶部一级导航 ===== -->
+  <div class="topnav">
+    <div class="topnav-brand">
+      <img class="brand-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMkAAAAxCAYAAABwB41xAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAyaADAAQAAAABAAAAMQAAAABZ2cT6AAAOV0lEQVR4Ae2ceXwV1RXH77wQELLIoiyCC4IFBRdQFJS2rlhrXQhSVGotglTrhvhRirhEpC6tS60bqFD3DQUUF7BVQIVCBDEoteBS8COLKEsSAmZ70+9vMjdv8pKQhL+axz2fz/fdM3eZmXveOfeemRcwxomzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs4CzgLOAs0DjLeA1fkgKjihadqiJl+ebLS18s6FFuVnfaivlB2Z9xnyzKXOOmeqtTcFZuyk10AIuSGQo308zhXmrzOb0bmb9XsZsaAmtTKBvbFVmCptNMS3MbeYF74cG2tV1SyELxFJoLrs/Fc+rIFJWGy0Znl03fHSOfT/dxM2VZqf5ypzrX7P7F3Ejm6oF9owgyfFPMkP9w+v8koqXdjK+d3zQ7is4wkBBjUg2+l8JlImRuvrUFnT4BoqBramaPM5RKVxVrTZxcGDYvoWyeaK6hnZy2G825duwrEYPY84L++h6iyF6vq4cyzbNYDVshtYg6QY/g3NAY78Pj1WncX+EubAIPoW1oPv9NaSMpH6QDPbPMT5fZIXpXuu35n/RwpRVPMOWsTf9KgMkCI4wUGoOutkM9m+pWV1rzYXU7g8rYRIoWCwj0NPhnkid2s4HiRzuC2gDCgTJ2bUgh9V5OsACeBqiMoCDJ0F9FADHwWRQUEimwgpoB+2hLbCzBnItnzrnLND4fcJj1Y2Gn8IgOBQyYCt8BhsgZcQaKmUmVG0iQ/yzSJVexvnTeaZYXq1NBwUr25rCLTiAry87IkSJdpS6xOf5ZLD/sZnpvVFXF+qzYELYPp1Sq/Cr4fGuijWRxhnoXeAU0Ir9GtQl/WgQH8IDoAVQgXkDpMHt8CzkwQg4AoaDnF9SDtYfpEt0nqOhPwwF7YZPwRyYEkJhzgTtJikp1iipN7kcvx8B8goB0pzJbTUvemuqTbLwox7GL5pN+yFV9Z60YDtJpFxVjTWUu0yu/5bJ9eI1WiornqDoFrZ9Rykn6hEe11VoBVc6JNkXHg3RC4Pg7ih/hF5g5XSUR+BNuBp2gkQp03jQhG6G+0AyCBR8cv5hYH2gLEnnMBir3UxBoqBvA5J80L3aADsN/WCworRNwZgSYg2UEpOpmsRQ3laVBSudAkTu9UlVm5SCJaebePwltL2r6j2Pld5bZ7xYqYl5aYzpDqRgdewoPo6aby5m/N+rzpFQtIpH83KtzPsl1SV6JzQFwE3h4XzKw0L9eMqPQ12FUiaJgs++cStA/xpsMOm71byPAu0iIiqrOFB6ZB1d9xjV1Xc29JSCTKssgs9xfB4C1n9yg9rEx8OoLkgS9vg/1Mp4G2VMn8idFVbpBXl/MCb+N1zpv/Co8WMLTHb2QuP1LKrqY5XcnQeYWFpv+slJR7KudrRNYTmGsrYgUbNW2i2gHUEOKKe8BnYl6mdlLkpnUCBrlc8GCe+ozfOBZsw7lJNDXQ47ChRAl8ImuAy0M2n+NjU8AH0gTIcHYSRIdA0Fd/QerudYO4ieUx6CbYD9AvmGzz+HulI6XXcIvAh12YSmpid2JWh6d17XHQ/22+HMyaum3jJZScfxTzWZxyzgLZZvK2stc1vKEcRbvB2biNsP49xjoG/Yv7cZ7meb57xEECZONAx1NCi9kQMq0JTm7EoUVO3CDmMpfwEKEjmunFXCjhc8Z8gRVW+vrZ1LzAIr9vvVHIaHleqjILHBYHcPuwPZenW/ADrAXjpAWoINqn+ip6kSmQm6PwXJshCK1BBrxNSYTeUsciisQ9l5VaZdOtr72AdsZaPK6V4p/Z8h/XrW5Jhx6JMIljTeVSlf14oeFT2nvAp21ZXjzYOesCuJOqj62e9HQWZ3sS/QdW4FSSeYAFaeQ7nJHlDaANB4ObR2sr4gUZ1E19CuF72W6iUaH4NoAOnYirXrj1TYayXPwfZtsqU1TJOdQC03fl6NOj94PVmjusEVBXn9TDOv3GT0Wx7uPneZHH8R45VaHAHJQWJPbe0rhzwb5MS7knU0dol0sONPpa44rF9LaeujKaWa9YC+Rkootp8cV4Gg4G4ftllnlnNLr83Jb6Jeu7JSNe2EX4KCXSnbXTAKJAqS6LWCylT5iK4KTX9OQ/22rO4n15iIhyNf5UdTrhpddlnhx8eZigqlKQmZ4b3Pu54euMbkRGUNLep4Vl9CL6UlUa4LR1rHtSeyY26gondYqWcbW78GXW+33gaJAjEqyY57Io1HhzwVdtSYAZDcV839QfO2O4aC/RBQyqXUS6mgD3ppYO/J7lBUpYZYw6TGbOLBr8PV55SB32VWtDQtyk5gku/t1kQ9fjTzvZIaY6d5RTXqqlfYe5HjWF1l6+rdAmdTVbKD2THv0nZKOOYDypdC/UNK7WL7wxkwCh4EpXsS67iHos8JahIfcu5z4DOYDZkgid7D4ZVVvOSoFAWxdKVfR8I+oGek6PySA53mpi32S2jas7B3Hw/f1esrzOB7yyTDqCor5GSND5LipX1NWXl73EKO2FixTirHsbpW8ql1nCjZwT6i393QEi6CL2EeyKkl1qGfR78TtNto5VcaKLHfr4JSO05UvuagNKzoRqlAkkTvQUGyA75TA6I2jZOcGHxW/jWBVDs/e09hc9Mv5E6pI0P8SQTFBBPsHnyfCpJWKiGr4j9meGde5+qPGRshBXkPGT9+BSPWmNb9uzZiZG1d60tvtbqLZNH3pLFq0y4hXXXSbf/a6tRH1CUaL0m+r+R6e031lZ4Wljq3vWd7LXtMU2pIsnGa9qw6sOh15BnS0mEnekj7HT3N4tUjGjVBf2Umb7OGB2O0k/hL7WrZ0NNo9X8COsAjMBKUpjwFcjY9z1wd6gdTPg1ZoFz/DpgLE6EzPAP6zUUyFY6FS0C7iJgCXUHnOAkkg+E20LX0kK9x74FSsjZgRe1Rkut1bNula6GxAWuDNPlY/VJCYikxCzuJ/Uo2mk4KEgUGpfTg2JbFE42fn2G711sWbL8FX6h8ftDr3qKqPzOpd2jY4TXK/rAKBsLLcBBcAJIL4X4YDx3hN6AU6TmQg8vx50I70BgFWC/QuC5wPPwEZoJeC3cCneN1OAGU2p0WlosoW8C9oDRuGzhpgAVSK0g67lxutHt0KkkESrCbECQq25R2MoU/jm+AXci0Vx7GP8IaY8q8RHe/Qg7YGNEPfctAO8MCKAAFgc3btTNNhLFwLUjUNhAegBmwEOyzhZ47noDmoH6q7wrXgV59234T0N8E7TblMAAwSvBccwKlroVRavyeRJWTZAtYoybXN83jbun5xiv2TUs8W88hIoPMoJkyhSoZbwqXLDXZx82qqqlN2dj8Ed73pJtS0u9s/FHPOT7/6Kpg8SoTS19qMmMbjNenvtX4Vk79K7gUHoaPQc4qx5UoSJbDIHgPJHL+Z0GOrx8f1V/BIvklfA9Kd3QOjd8EGqsA1LHkMdB5lOLNhxfgetAOsxrawjQoAif1WCCyTNbTs6k0f75iPg/vPw8CJGbT5eSb93aYtNiZJqvf/OSW4Pix9WNNVtm9Jhs/zC4FlfhcFjQLzxmL3Wmyj72x1vGVla0ohoCCQK9ZB0JnUKqjFV5voH4LcvBvQW+m+oKePfS9nAJKreTUGqNAegW4oSDdmkd5MBwIks3wKWiczqEbPR3i8A/QGzLdj3a1T2AhOGmABVIvSArz+Dck8ddxsy38Re/vCIQ3jPl3utlePMBUxM/C/3Lwn6685SqD0Tj6k9XsdGMhY8qmgRcEhYJDQZJlgwU9o+Irk515lPF6ba82tubBGVTJcVtDJ5CzSk6GtZAG3eFtkFMrkOTsn4PaFASZsA60Y5wIWyEfVK/zLAKNOQB0Tl2nH1hRQBwF2CEImPaU+wH5Z/BKWbvSAJD8C+QT2Cn4w0hd00nKWcD3PbNtcb7ZljeszrltW3KM2bbkbvrNI4WSU1TKMD/HjCwpN2O3++bWrb65d5NvHl/nmxfX+OatL33z4ee+yV9Rbr7N18N4Q6SITheCUi0FwSSQfAVjIBdUPxkki+FP0AHk8KtAO84WGAVXwA/QDh4CBYBSrNGQBzHoA0qrdF6lW0NDvRnlg7ADlL4tAwWbglG7mYLlImgOGqtdyAkWkOFSS/SXvb7fh11CaUbt0vq4pTSIhOT4o0hkHjabm/NvUfC10ggl6GX4Umla3JTELjdH9pAzN0RkX7aiwM7aUS4BreBybLakoFTAnAr3h8fqfxrowVrplvrdCOOgB4yAWaCUTcGqgPoLyNkvAwXGFNBucCWcCRItBjoeDBqv9EsBcxDofrQjKZitT+g+nGABa5DUMsauAiR5pvrTemMeJxGR81RKIWYpwacUHEIP76Xl5aak7GJzbtfnbbcGlNFg+Jr+58N80DXlhGrXr9nabd6HLqBVXn33hbNBfRRcCkwFvgJhCdwBet6ZDe/CdHgUNF5j1FfYe1CwrYFBUAi6pgLxB1CfeXA7zASJC5JKOwSrT6juYUWuHzPtcnNwI6UmWpWrSwXBsZNgqSBY4rFtcL65fp9Xq3eq96gfPfQssBdsBDngO7A/zAE5bhHovOp3EMhZ58I6UKp0GLwAt4Ccfj1shftAO81JcDkoiBRk2bAWFIgvhWXbUNc1tPucAbqf38O3oPModdMOswJ0DukKoD1e8IA9TC7yM3DLEcz6Guhe7+w9nDeL1ftp/mmvkz3SAntWkAz1e5BEaMVtXc+3rVz9HR6D7zEzvIX19HXNKW4B8ok9SHrxVulTngt80qt48Jq0N7Mvhe2gtEf/i+NsntTeNdM9PWA7cRZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFnAWcBZwFtgtC/wPQSnDI/QNrcYAAAAASUVORK5CYII=" alt="信诚创新">
+    </div>
+    <div class="topnav-scroll" id="topnavScroll"></div>
+  </div>
+
+  <div class="app-body">
+    <!-- ===== 左侧二级导航 ===== -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="nav-scroll" id="navScroll"></nav>
+      <div class="sidebar-foot">
+        <div class="avatar">运营</div>
+        <div class="sf-info">
+          <div class="sf-name">张无忌</div>
+          <div class="sf-role">运营岗</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== 主区 ===== -->
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="collapse-btn" onclick="toggleSidebar()">≡</span>
+          <div class="breadcrumb" id="breadcrumb">定价 / <b>价格管理 / L2 价格工作台</b></div>
+        </div>
+        <div class="topbar-right">
+          <span class="topbar-icon">🔍</span>
+          <span class="topbar-icon">🔔<span class="badge-dot">3</span></span>
+          <span class="topbar-icon">❓</span>
+          <div class="user-chip">
+            <div class="avatar">运营</div>
+            <span>张无忌</span>
+            <span style="font-size:11px">▾</span>
+          </div>
+        </div>
+      </header>
+      <main class="content" id="content">
+        <!-- 页面容器，由JS渲染 -->
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- Modal / Drawer / Toast 容器 -->
+<div id="modalRoot"></div>
+<div id="drawerRoot"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ============================================================
+   定价中台一期 前端原型  —  数据驱动渲染
+   ============================================================ */
+
+/* ---------- 导航数据 ---------- */
+const NAV = [
+  {k:'bi',n:'信诚BI',icon:'📊'},
+  {k:'sale',n:'销售',icon:'🛒'},
+  {k:'price',n:'定价',icon:'💰',expand:true,subs:[
+    {k:'p-l2',n:'价格管理',group:true},
+    {k:'l2',n:'价格管理工作台'},
+    {k:'block',n:'新品发货拦截'},
+    {k:'adj-mgr',n:'调价建议管理',hidden:true},
+    {k:'p-calc',n:'价格计算',group:true},
+    {k:'sku',n:'SKU 范围列表'},
+    {k:'ver',n:'刊登销售价版本管理'},
+    {k:'ver3',n:'清库价格版本管理'},
+    {k:'freight',n:'运费计算列表'},
+    {k:'pool',n:'运费池加权计算列表'},
+    {k:'profit',n:'销售毛利率列表'},
+    {k:'p-conf',n:'基础配置',group:true},
+    {k:'fee-item',n:'费用项配置'},
+    {k:'fee-calc',n:'费用计算配置'},
+    {k:'rate-conf',n:'必要销售毛利率配置'},
+    {k:'clear-conf',n:'清库回收率配置'},
+    {k:'other-conf',n:'其他配置'},
+    {k:'adj-conf',n:'调价建议配置',hidden:true},
+    {k:'p-hidden',n:'订单费用映射',hidden:true}
+  ]},
+  {k:'goods',n:'商品',icon:'📦'},
+  {k:'pmc',n:'PMC',icon:'📋'},
+  {k:'buy',n:'采购',icon:'🛍️'},
+  {k:'first',n:'头程',icon:'🚚'},
+  {k:'wh',n:'仓库',icon:'🏭'},
+  {k:'order',n:'订单',icon:'🧾'},
+  {k:'log',n:'物流',icon:'✈️'},
+  {k:'cs',n:'eBay客服',icon:'💬'},
+  {k:'base',n:'基础',icon:'⚙️'},
+  {k:'perm',n:'权限',icon:'🔐'}
+];
+
+const PAGE_TITLE = {
+  'l2':['价格管理工作台','价格管理 / 价格管理工作台',''],
+  'block':['新品发货拦截','价格管理 / 新品发货拦截',''],
+  'adj-mgr':['调价建议管理','价格管理 / 调价建议管理','展示系统生成的调价建议（一期仅建框架，二期实现逻辑）'],
+  'sku':['SKU 范围列表','价格计算 / SKU 范围列表',''],
+  'ver':['刊登销售价版本管理','价格计算 / 刊登销售价版本管理',''],
+  'ver3':['清库价格版本管理','价格计算 / 清库价格版本管理',''],
+  'freight':['运费计算列表','价格计算 / 运费计算列表',''],
+  'pool':['运费池加权计算列表','价格计算 / 运费池加权计算列表',''],
+  'profit':['销售毛利率列表','价格计算 / 销售毛利率列表',''],
+  'fee-item':['费用项配置','基础配置 / 费用项配置',''],
+  'fee-calc':['费用计算配置','基础配置 / 费用计算配置',''],
+  'rate-conf':['必要销售毛利率配置','基础配置 / 必要销售毛利率配置',''],
+  'clear-conf':['清库回收率配置','基础配置 / 清库回收率配置',''],
+  'other-conf':['其他配置','基础配置 / 其他配置',''],
+  'adj-conf':['调价建议配置','基础配置 / 调价建议配置','配置调价建议生成规则（一期仅建框架，二期实现逻辑）'],
+  'p-hidden':['订单费用映射','系统设置 / 订单费用映射','将订单利润报表费用项映射为定价中台标准成本项']
+};
+
+/* ---------- Mock 数据 ---------- */
+const M = {};
+M.l2 = [
+  {id:'L2-001',verNo:'V1.1.2',img:'🎧',sku:'99999999',plat:'eBay',site:'US',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',priceN:38.50,rateN:18,priceA:42.80,rateA:21.5,cur:'USD',adj:[],listing:3,auditSt:'已发布',calcTime:'2026-08-08 14:32',auditTime:'2026-08-08 16:10',deviation:2.3,l1Price:45.9,l1Rate:23,
+    fee:{fc:'美森快船',ff:18.50,lc:'USPS',lf:4.20,qa:1.80,ex:0.60,dc:1.20,wlabor:0.90,oc:0.40,cost:85.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:8},
+    feeList:[{c:'C004',n:'采购成本',est:85.00,act:86.50},{c:'C011',n:'头程运费',est:18.50,act:18.50},{c:'C021',n:'尾程运费',est:4.20,act:4.55},{c:'C031',n:'佣金',est:5.01,act:5.10},{c:'C032',n:'税率',est:0,act:0},{c:'C033',n:'退款率',est:1.16,act:1.40},{c:'C034',n:'广告费比例',est:3.08,act:3.42}],
+    listings:[{id:'29384721',t:'Wireless Bluetooth Headphones',price:42.99,cur:'USD',stock:128,st:'在线',ut:'2026-08-07'},{id:'29384722',t:'Noise Cancelling Earbuds',price:44.50,cur:'USD',stock:56,st:'在线',ut:'2026-08-06'},{id:'29384730',t:'Pro ANC Headset',price:39.99,cur:'USD',stock:0,st:'下架',ut:'2026-08-01'}]
+  },
+  {id:'L2-002',verNo:'V1.1.2',img:'🖱️',sku:'55665566',plat:'eBay',site:'US',cat:'3C数码/外设',name:'无线静音鼠标',priceN:15.20,rateN:17,priceA:16.80,rateA:19,cur:'USD',adj:['成本变动调价'],listing:2,auditSt:'已发布',calcTime:'2026-08-08 10:15',auditTime:'2026-08-08 11:00',deviation:-1.2,l1Price:17.5,l1Rate:20,
+    fee:{fc:'云途',ff:6.80,lc:'USPS',lf:3.10,qa:0.50,ex:0.30,dc:0.60,wlabor:0.40,oc:0.20,cost:22.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6},
+    feeList:[{c:'C004',n:'采购成本',est:22.00,act:22.00},{c:'C011',n:'头程运费',est:6.80,act:7.10},{c:'C021',n:'尾程运费',est:3.10,act:3.00}],
+    listings:[{id:'19283746',t:'Silent Wireless Mouse',price:16.99,cur:'USD',stock:240,st:'在线',ut:'2026-08-07'},{id:'19283800',t:'Quiet Click Mouse',price:15.99,cur:'USD',stock:180,st:'在线',ut:'2026-08-05'}]
+  },
+  {id:'L2-003',verNo:'V1.1.1',img:'⌚',sku:'22082208',plat:'eBay',site:'UK',cat:'3C数码/穿戴',name:'智能手表运动版',priceN:55.00,rateN:20,priceA:58.50,rateA:22,cur:'GBP',adj:[],listing:1,auditSt:'已发布',calcTime:'2026-08-07 18:20',auditTime:'2026-08-08 09:30',deviation:5.6,l1Price:60,l1Rate:24,
+    fee:{fc:'中欧班列',ff:24.00,lc:'Royal Mail',lf:5.80,qa:2.20,ex:0.80,dc:1.50,wlabor:1.10,oc:0.50,cost:120.00,ccur:'CNY',rate:9.15,comm:13,refund:2,tax:0,ad:9},
+    feeList:[{c:'C004',n:'采购成本',est:120.00,act:121.00},{c:'C011',n:'头程运费',est:24.00,act:24.00},{c:'C021',n:'尾程运费',est:5.80,act:6.12}],
+    listings:[{id:'56473829',t:'Smart Watch Sport Edition',price:58.99,cur:'GBP',stock:88,st:'在线',ut:'2026-08-06'}]
+  },
+  {id:'L2-004',verNo:'V1.1.1',img:'🔌',sku:'11071107',plat:'eBay',site:'US',cat:'3C数码/充电',name:'65W GaN 充电器',priceN:24.90,rateN:16,priceA:26.50,rateA:18.5,cur:'USD',adj:['利润率偏离调价'],listing:2,auditSt:'已发布',calcTime:'2026-08-08 09:00',auditTime:'2026-08-08 09:45',deviation:-8.5,l1Price:28,l1Rate:21,
+    fee:{fc:'美森快船',ff:9.50,lc:'USPS',lf:3.80,qa:0.90,ex:0.40,dc:0.80,wlabor:0.60,oc:0.30,cost:38.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:7},
+    feeList:[{c:'C004',n:'采购成本',est:38.00,act:42.00},{c:'C011',n:'头程运费',est:9.50,act:9.50},{c:'C021',n:'尾程运费',est:3.80,act:3.95}],
+    listings:[{id:'82736451',t:'65W GaN Charger',price:26.99,cur:'USD',stock:160,st:'在线',ut:'2026-08-07'},{id:'82736500',t:'Fast Charging Adapter',price:25.99,cur:'USD',stock:90,st:'在线',ut:'2026-08-04'}]
+  },
+  {id:'L2-005',verNo:'V1.1.1',img:'🔦',sku:'77337733',plat:'eBay',site:'DE',cat:'户外/照明',name:'强光手电筒 USB',priceN:12.30,rateN:17,priceA:13.50,rateA:19,cur:'EUR',adj:[],listing:1,auditSt:'已发布',calcTime:'2026-08-06 16:00',auditTime:'2026-08-07 10:00',deviation:1.1,l1Price:5.5,l1Rate:20,
+    fee:{fc:'云途',ff:5.20,lc:'DHL',lf:2.80,qa:0.40,ex:0.20,dc:0.50,wlabor:0.30,oc:0.15,cost:16.00,ccur:'CNY',rate:7.85,comm:13,refund:3,tax:0,ad:5},
+    feeList:[{c:'C004',n:'采购成本',est:16.00,act:16.00},{c:'C011',n:'头程运费',est:5.20,act:5.20},{c:'C021',n:'尾程运费',est:2.80,act:2.85}],
+    listings:[{id:'10293847',t:'LED Taschenlampe USB',price:13.99,cur:'EUR',stock:300,st:'在线',ut:'2026-08-05'}]
+  },
+  {id:'L2-006',verNo:'V1.1.1',img:'📱',sku:'44014401',plat:'eBay',site:'US',cat:'3C数码/配件',name:'手机壳 硅胶 黑色',priceN:6.80,rateN:16,priceA:7.50,rateA:18,cur:'USD',adj:[],listing:4,auditSt:'已发布',calcTime:'2026-08-08 11:20',auditTime:'2026-08-08 14:00',deviation:0.5,l1Price:8.5,l1Rate:21,
+    fee:{fc:'云途',ff:2.10,lc:'USPS',lf:1.80,qa:0.20,ex:0.10,dc:0.25,wlabor:0.15,oc:0.08,cost:8.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6},
+    feeList:[{c:'C004',n:'采购成本',est:8.00,act:8.00},{c:'C011',n:'头程运费',est:2.10,act:2.10},{c:'C021',n:'尾程运费',est:1.80,act:1.82}],
+    listings:[{id:'72839104',t:'Phone Case Silicone Black',price:7.99,cur:'USD',stock:500,st:'在线',ut:'2026-08-08'}]
+  },
+  {id:'L211071107260808001',img:'🔌',sku:'11071107',plat:'eBay',site:'US',cat:'3C数码/充电',name:'65W GaN 充电器',priceN:null,priceA:null,rateN:16,rateA:18.5,cur:'USD',auditSt:'待审核',calcTime:'2026-08-08 08:35',auditTime:'',adj:[],listing:0,l1Price:28,l1Rate:21,
+    fee:{fc:'美森快船',ff:9.50,lc:'USPS',lf:3.80,qa:0.90,ex:0.40,dc:0.80,wlabor:0.60,oc:0.30,cost:null,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:7}},
+  {id:'L244014401260808002',img:'📱',sku:'44014401',plat:'eBay',site:'US',cat:'3C数码/配件',name:'手机壳 硅胶 黑色',priceN:7.20,priceA:8.00,rateN:16,rateA:18,cur:'USD',auditSt:'待审核',calcTime:'2026-08-08 13:55',auditTime:'',adj:[],listing:0,l1Price:8.5,l1Rate:21,
+    fee:{fc:'云途',ff:2.10,lc:'USPS',lf:1.80,qa:0.20,ex:0.10,dc:0.25,wlabor:0.15,oc:0.08,cost:8.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}},
+  {id:'L255665566260807005',verNo:'V1.1.1',img:'🖱️',sku:'55665566',plat:'eBay',site:'US',cat:'3C数码/外设',name:'无线静音鼠标',priceN:14.80,priceA:16.30,rateN:17,rateA:19,cur:'USD',auditSt:'已作废',calcTime:'2026-08-07 08:30',auditTime:'2026-08-07 10:00',adj:[],listing:2,l1Price:17.5,l1Rate:20,
+    fee:{fc:'云途',ff:6.50,lc:'USPS',lf:3.00,qa:0.50,ex:0.30,dc:0.60,wlabor:0.40,oc:0.20,cost:22.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}}
+];
+
+M.sku = [
+  {img:'🎧',sku:'99999999',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',saleSt:'在售',weight:'350',size:'15×12×8',firstNo:'FC-2026-0801-001',countries:['美国','英国','德国'],stockDetail:[{c:'美国',fl:[{no:'FC-2026-0801-001',st:'已收货',destWh:'美西仓(LAX)',qty:'100 件',shipT:'2026-07-05',eta:'2026-08-01'}]},{c:'英国',fl:[{no:'FC-2026-0715-011',st:'已收货',destWh:'英仓(LON)',qty:'100 件',shipT:'2026-07-10',eta:'2026-08-05'}]},{c:'德国',fl:[]}],comboType:'单品',firstSync:'2026-07-15 10:00',lastSync:'2026-08-08 14:00',rangeSt:'启用'},
+  {img:'🖱️',sku:'55665566',cat:'3C数码/外设',name:'无线静音鼠标',saleSt:'在售',weight:'120',size:'11×6×3',firstNo:'FC-2026-0720-018',countries:['美国'],stockDetail:[{c:'美国',fl:[{no:'FC-2026-0720-018',st:'已收货',destWh:'美西仓(LAX)',qty:'120 件',shipT:'2026-06-25',eta:'2026-07-20'}]}],comboType:'单品',firstSync:'2026-07-10 09:30',lastSync:'2026-08-08 14:00',rangeSt:'启用'},
+  {img:'⌚',sku:'22082208',cat:'3C数码/穿戴',name:'智能手表运动版',saleSt:'在售',weight:'280',size:'18×14×6',firstNo:'FC-2026-0628-007',countries:['英国'],stockDetail:[{c:'英国',fl:[{no:'FC-2026-0628-007',st:'已收货',destWh:'英仓(LON)',qty:'100 件',shipT:'2026-06-01',eta:'2026-06-28'}]}],comboType:'单品',firstSync:'2026-06-28 14:20',lastSync:'2026-08-08 14:00',rangeSt:'启用'},
+  {img:'🔌',sku:'11071107',cat:'3C数码/充电',name:'65W GaN 充电器',saleSt:'在售',weight:'180',size:'8×6×4',firstNo:'FC-2026-0805-022',countries:['美国','加拿大'],stockDetail:[{c:'美国',fl:[{no:'FC-2026-0805-022',st:'已收货',destWh:'美西仓(LAX)',qty:'100 件',shipT:'2026-07-10',eta:'2026-08-05'}]},{c:'加拿大',fl:[]}],comboType:'单品',firstSync:'2026-07-20 11:00',lastSync:'2026-08-08 14:00',rangeSt:'启用'},
+  {img:'🎒',sku:'33093309',cat:'箱包/双肩包',name:'商务双肩电脑包',saleSt:'停售',weight:'850',size:'',firstNo:'FC-2026-0510-003',countries:['美国'],stockDetail:[{c:'美国',fl:[{no:'FC-2026-0510-003',st:'已收货',destWh:'美西仓(LAX)',qty:'800 件',shipT:'2026-04-15',eta:'2026-05-10'}]}],comboType:'开发组合',subs:[{sku:'33093310',name:'双肩包主体',qty:1},{sku:'33093311',name:'防雨罩',qty:1},{sku:'33093312',name:'收纳袋',qty:2}],firstSync:'2026-05-10 08:00',lastSync:'2026-08-01 14:00',rangeSt:'禁用'},
+  {img:'🔦',sku:'77337733',cat:'户外/照明',name:'强光手电筒 USB',saleSt:'在售',weight:'220',size:'14×3×3',firstNo:'FC-2026-0728-015',countries:['德国','法国'],stockDetail:[{c:'德国',fl:[{no:'FC-2026-0728-015',st:'已收货',destWh:'德仓(FRA)',qty:'200 件',shipT:'2026-07-05',eta:'2026-07-28'}]},{c:'法国',fl:[]}],comboType:'单品',firstSync:'2026-07-28 16:30',lastSync:'2026-08-08 14:00',rangeSt:'启用'},
+  {img:'🔌',sku:'22102210',cat:'3C数码/线材',name:'USB-C 数据线 1m',saleSt:'在售',weight:'',size:'20×10×2',firstNo:'',countries:[],stockDetail:[],comboType:'单品',firstSync:'',lastSync:'',rangeSt:'禁用'},
+  {img:'📱',sku:'44014401',cat:'3C数码/配件',name:'手机壳 硅胶 黑色',saleSt:'在售',weight:'40',size:'15×8×1',firstNo:'FC-2026-0808-031',countries:['美国','英国'],stockDetail:[{c:'美国',fl:[{no:'FC-2026-0808-031',st:'在途',destWh:'美西仓(LAX)',qty:'200 件',shipT:'2026-07-25',eta:'2026-08-08'}]},{c:'英国',fl:[]}],comboType:'拆包组合',subs:[{sku:'44014402',name:'手机壳 硅胶 黑色 · 单件装',qty:2}],firstSync:'2026-08-01 10:00',lastSync:'2026-08-08 14:00',rangeSt:'启用'}
+];
+
+// 头程单据详情 Mock（按首程单号查询）：srcWh=发货仓 shipMode=运输方式 trackNo=跟踪号
+
+M.ver = [
+  {l1:45.9,l1Rate:23,img:'🎧',vid:'L299999999260808001',verNo:'V1.1.2',verNo:'V1.1.2',plat:'eBay',site:'US',country:'美国',wh:['美西仓','美东仓'],fcMode:'海运',posts:['10024','90001'],sku:'99999999',cur:'USD',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-08 16:10',auditBy:'超级管理员',genTime:'2026-08-08 14:00',doneTime:'2026-08-08 14:32',rateN:18,rateA:21.5,priceN:38.50,priceA:42.80,fc:'美森快船',ff:18.50,lc:'USPS',lf:4.20,qa:1.80,ex:0.60,dc:1.20,wlabor:1.10,oc:0.40,cost:85.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:8},
+  {l1:17.5,l1Rate:20,img:'🖱️',vid:'L255665566260808001',verNo:'V1.1.2',verNo:'V1.1.2',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],fcMode:'海运',posts:['10024'],sku:'55665566',cur:'USD',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-08 11:00',auditBy:'超级管理员',genTime:'2026-08-08 09:30',doneTime:'2026-08-08 10:15',rateN:17,rateA:19,priceN:15.20,priceA:16.80,fc:'云途',ff:6.80,lc:'USPS',lf:3.10,qa:0.50,ex:0.30,dc:0.60,wlabor:0.40,oc:0.20,cost:22.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6},
+  {l1:60,l1Rate:24,img:'⌚',vid:'L222082208260807001',verNo:'V1.1.1',verNo:'V1.1.1',plat:'eBay',site:'UK',country:'英国',wh:['英仓'],fcMode:'铁路',posts:['SW1A'],sku:'22082208',cur:'GBP',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-08 09:30',auditBy:'赵敏',genTime:'2026-08-07 16:00',doneTime:'2026-08-07 18:20',rateN:20,rateA:22,priceN:55.00,priceA:58.50,fc:'中欧班列',ff:24.00,lc:'Royal Mail',lf:5.80,qa:2.20,ex:0.80,dc:1.50,wlabor:1.10,oc:0.50,cost:120.00,ccur:'CNY',rate:9.15,comm:13,refund:2,tax:0,ad:9},
+  {l1:null,l1Rate:null,img:'🔌',vid:'L211071107260808001',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],fcMode:'海运',posts:['10024'],sku:'11071107',cur:'USD',execSt:'执行异常',execTag:['采购成本缺失','毛利率缺失','头程缺失'],auditSt:'待审核',auditTime:'',auditBy:'',genTime:'2026-08-08 08:30',doneTime:'2026-08-08 08:35',rateN:16,rateA:18.5,priceN:null,priceA:null,fc:'美森快船',ff:9.50,lc:'USPS',lf:3.80,qa:0.90,ex:0.40,dc:0.80,wlabor:0.60,oc:0.30,cost:null,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:7},
+  {l1:8.5,l1Rate:21,img:'📱',vid:'L244014401260808002',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],fcMode:'海运',posts:['10024'],sku:'44014401',cur:'USD',execSt:'待执行',execTag:[],auditSt:'待审核',auditTime:'',auditBy:'',genTime:'2026-08-08 13:50',doneTime:'',rateN:16,rateA:18,priceN:null,priceA:null,fc:'云途',ff:2.10,lc:'USPS',lf:1.80,qa:0.20,ex:0.10,dc:0.25,wlabor:0.15,oc:0.08,cost:8.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6},
+  {l1:17.5,l1Rate:20,img:'🖱️',vid:'L255665566260807005',verNo:'V1.1.1',verNo:'V1.1.1',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],fcMode:'海运',posts:['10024'],sku:'55665566',cur:'USD',execSt:'执行完成',execTag:[],auditSt:'已作废',auditTime:'2026-08-07 10:00',auditBy:'宋远桥',genTime:'2026-08-07 08:00',doneTime:'2026-08-07 08:30',rateN:17,rateA:19,priceN:14.80,priceA:16.30,fc:'云途',ff:6.50,lc:'USPS',lf:3.00,qa:0.50,ex:0.30,dc:0.60,wlabor:0.40,oc:0.20,cost:22.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}
+];
+
+M.freightFirst = [
+  {fid:'TC7260808000001',img:'🎧',vid:'L299999999260808001',verNo:'V1.1.2',verNo:'V1.1.2',plat:'eBay / US',country:'美国',wh:'美西仓',sku:'99999999',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',fc:'美森快船',ff:18.50,st:'执行完成',tags:[],genT:'2026-08-08 14:00',doneT:'2026-08-08 14:30'},
+  {fid:'TC3260808000002',img:'🎧',vid:'L299999999260808001',verNo:'V1.1.2',verNo:'V1.1.2',plat:'eBay / US',country:'美国',wh:'美东仓',sku:'99999999',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',fc:'美森快船',ff:19.20,st:'执行完成',tags:[],genT:'2026-08-08 14:00',doneT:'2026-08-08 14:30'},
+  {fid:'TC9260808000003',img:'🖱️',vid:'L255665566260807001',plat:'eBay / US',country:'美国',wh:'美西仓',sku:'55665566',cat:'3C数码/外设',name:'无线静音鼠标',fc:'云途',ff:6.80,st:'执行完成',tags:[],genT:'2026-08-08 09:30',doneT:'2026-08-08 10:00'},
+  {fid:'TC1260807000004',img:'⌚',vid:'L222082208260807003',plat:'eBay / UK',country:'英国',wh:'英仓',sku:'22082208',cat:'3C数码/穿戴',name:'智能手表运动版',fc:'中欧班列',ff:24.00,st:'执行异常',tags:['物流试算异常'],genT:'2026-08-07 16:00',doneT:'2026-08-07 18:00'},
+  {fid:'TC5260808000005',img:'🔌',vid:'L211071107260808001',plat:'eBay / US',country:'美国',wh:'美西仓',sku:'11071107',cat:'3C数码/充电',name:'65W GaN 充电器',fc:'美森快船',ff:9.50,st:'执行完成',tags:[],genT:'2026-08-08 08:30',doneT:'2026-08-08 08:35'}
+];
+M.freightLast = [
+  {fid:'WC4260808000001',img:'🎧',vid:'L299999999260808001',verNo:'V1.1.2',verNo:'V1.1.2',type:'L2',plat:'eBay / US',country:'美国',wh:'美西仓',city:'Los Angeles',zip:'90001',sku:'99999999',lc:'USPS',lf:4.20,st:'执行完成',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:31'},
+  {fid:'WC8260808000002',img:'🎧',vid:'L299999999260808001',verNo:'V1.1.2',verNo:'V1.1.2',type:'L2',plat:'eBay / US',country:'美国',wh:'美东仓',city:'New York',zip:'10024',sku:'99999999',lc:'USPS',lf:4.35,st:'执行完成',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:31'},
+  {fid:'WC2260808000003',img:'🖱️',vid:'L255665566260807001',type:'L2',plat:'eBay / US',country:'美国',wh:'美西仓',city:'Los Angeles',zip:'90001',sku:'55665566',lc:'USPS',lf:3.10,st:'执行完成',genT:'2026-08-08 09:30',doneT:'2026-08-08 10:05'},
+  {fid:'WC6260808000004',img:'🔌',vid:'L211071107260808001',type:'L2',plat:'eBay / US',country:'美国',wh:'美西仓',city:'Los Angeles',zip:'90001',sku:'11071107',lc:'USPS',lf:3.80,st:'执行异常',genT:'2026-08-08 08:30',doneT:'2026-08-08 08:40'},
+  {fid:'WC3260806000005',img:'🔦',vid:'L377337733260808001',verNo:'V1.1.1',verNo:'V1.1.1',type:'L3',plat:'eBay / DE',country:'德国',wh:'德仓',city:'Frankfurt',zip:'60313',sku:'77337733',lc:'DHL',lf:2.80,st:'执行完成',genT:'2026-08-06 16:00',doneT:'2026-08-06 16:40'}
+];
+
+M.profit = [
+  {img:'🎧',sku:'99999999',cat:'3C数码/耳机',plat:'eBay',site:'US',rateN:18,base:15,add:3,rateA:21.5,ut:'2026-08-08 14:32'},
+  {img:'🖱️',sku:'55665566',cat:'3C数码/外设',plat:'eBay',site:'US',rateN:17,base:15,add:2,rateA:19,ut:'2026-08-08 10:15'},
+  {img:'⌚',sku:'22082208',cat:'3C数码/穿戴',plat:'eBay',site:'UK',rateN:20,base:15,add:5,rateA:22,ut:'2026-08-07 18:20'},
+  {img:'🔌',sku:'11071107',cat:'3C数码/充电',plat:'eBay',site:'US',rateN:16,base:15,add:1,rateA:18.5,ut:'2026-08-08 08:35'},
+  {img:'🔦',sku:'77337733',cat:'户外/照明',plat:'eBay',site:'DE',rateN:17,base:15,add:2,rateA:19,ut:'2026-08-06 16:00'},
+  {img:'📱',sku:'44014401',cat:'3C数码/配件',plat:'eBay',site:'US',rateN:16,base:15,add:1,rateA:18,ut:'2026-08-08 14:00'}
+];
+
+M.feeItem = [
+  {remark:'取商品模块采购未税价',cat:'商品成本',item:'采购成本',needCalc:'计算配置',map:'采购单价',plat:'eBay',st:'启用'},
+  {remark:'按版本清洗回写值',cat:'头程运费',item:'头程运费',needCalc:'计算配置',map:'头程物流费',plat:'eBay',st:'启用'},
+  {remark:'按订单实际派送费',cat:'尾程运费',item:'尾程运费',needCalc:'计算配置',map:'尾程派送费',plat:'eBay',st:'启用'},
+  {remark:'eBay 成交费 13%',cat:'平台佣金',item:'佣金',needCalc:'计算配置',map:'平台成交费',plat:'eBay',st:'启用'},
+  {remark:'',cat:'平台佣金',item:'退款率',needCalc:'API调用',map:'退款损失',plat:'eBay',st:'启用'},
+  {remark:'',cat:'平台佣金',item:'税率',needCalc:'API调用',map:'销售税',plat:'eBay',st:'启用'},
+  {remark:'',cat:'平台佣金',item:'广告费比例',needCalc:'计算配置',map:'推广费用',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'QA人力成本',needCalc:'计算配置',map:'质检人工',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'外验费用',needCalc:'二次加工',map:'验货费',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'国内仓仓储费及杂费',needCalc:'二次加工',map:'国内仓租',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'仓储人力成本',needCalc:'计算配置',map:'仓库人工',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'海外仓入库费',needCalc:'二次加工',map:'海外仓处理费',plat:'eBay',st:'启用'},
+  {remark:'',cat:'仓储相关费',item:'包装费',needCalc:'二次加工',map:'包材费',plat:'eBay',st:'停用'}
+];
+
+M.feeCalc = [
+  {dim:'产品分类+平台+站点',types:['刊登销售价'],users:['赵敏','张无忌'],remark:'eBay 成交费 13%，每月复核',item:'佣金',plat:'eBay',site:'全部',cat:'全部',modes:[{mode:'售价百分比',logic:'13%'}],st:'启用'},
+  {dim:'产品分类+平台+站点',types:['刊登销售价'],users:['张无忌'],remark:'按广告实际消耗，阶梯随活动调整',item:'广告费比例',plat:'eBay',site:'全部',cat:'全部',modes:[{mode:'售价百分比',logic:'阶梯（按售价区间 5%~9%）'}],st:'启用'},
+  {dim:'产品分类',types:['刊登销售价'],users:['曾阿牛','宋远桥'],remark:'取商品模块采购未税价',item:'采购成本',plat:'eBay',site:'全部',cat:'全部',modes:[{mode:'固定费用',logic:'取商品模块采购未税价'}],st:'启用'},
+  {dim:'产品分类+海外仓服务商+国家',types:['刊登销售价','清库价'],users:['曾阿牛'],remark:'按版本清洗回写值',item:'头程运费',plat:'eBay',provider:'万邑通',country:'美国',site:'全部',cat:'全部',modes:[{mode:'计重计费',logic:'18.50/kg · 系数6000'}],st:'启用'},
+  {dim:'产品分类+国家',types:['刊登销售价','清库价'],users:['小昭','周芷若'],remark:'按订单实际派送费',item:'尾程运费',plat:'eBay',country:'美国',site:'全部',cat:'全部',modes:[{mode:'固定费用',logic:'取清洗回写值'},{mode:'头程运费加点',logic:'+5%'}],st:'启用'},
+  {dim:'产品分类+平台+站点',types:['刊登销售价'],users:['周芷若'],remark:'固定费用+售价%双方式，组合品另核',item:'QA人力成本',plat:'eBay',site:'全部',cat:'3C数码',modes:[{mode:'固定费用',logic:'¥1.80/件'},{mode:'售价百分比',logic:'0.5%'}],st:'启用'},
+  {dim:'产品分类',types:['开品推荐价','刊登销售价'],users:['周芷若','杨逍'],remark:'体积重系数 6000，共 5 档',item:'仓储人力成本',plat:'',site:'全部',cat:'全部',modes:[{mode:'重量段',logic:'体积重系数6000，5档'},{mode:'屏蔽重量段计费',logic:'—'}],st:'启用'}
+];
+
+M.rateBase = [
+  {cat:'3C数码',plat:'eBay',rate:15,ut:'2026-08-01 10:00'},
+  {cat:'户外',plat:'',rate:15,ut:'2026-08-01 10:00'},
+  {cat:'箱包',plat:'eBay',rate:15,ut:'2026-08-01 10:00'},
+  {cat:'家居',plat:'',rate:15,ut:'2026-08-01 10:00'}
+];
+M.rateAdd = [
+  {cat:'3C数码',lo:0,hi:20,add:-5,d:'流量款走量'},
+  {cat:'3C数码',lo:20,hi:50,add:0,d:''},
+  {cat:'3C数码',lo:50,hi:100,add:1,d:''},
+  {cat:'3C数码',lo:100,hi:200,add:2,d:''},
+  {cat:'3C数码',lo:200,hi:350,add:4,d:''},
+  {cat:'3C数码',lo:350,hi:500,add:7,d:''},
+  {cat:'3C数码',lo:500,hi:700,add:9,d:''},
+  {cat:'3C数码',lo:700,hi:1500,add:10,d:''},
+  {cat:'3C数码',lo:1500,hi:2000,add:13,d:''},
+  {cat:'3C数码',lo:2000,hi:null,add:15,d:'高货值高加点'}
+];
+
+// 清库回收率配置：仓库类型 + 库龄段 + 减值比例 + 现金回收率
+M.clearConf = [
+  {id:1,whType:'海外仓',ageLo:0,ageHi:90,dep:0,ut:'2026-08-01 10:00',user:'宋远桥'},
+  {id:2,whType:'海外仓',ageLo:91,ageHi:120,dep:20,ut:'2026-08-01 10:00',user:'宋远桥'},
+  {id:3,whType:'海外仓',ageLo:121,ageHi:150,dep:30,ut:'2026-08-01 10:00',user:'宋远桥'},
+  {id:4,whType:'海外仓',ageLo:151,ageHi:180,dep:50,ut:'2026-08-01 10:00',user:'宋远桥'},
+  {id:5,whType:'海外仓',ageLo:181,ageHi:null,dep:100,ut:'2026-08-01 10:00',user:'宋远桥'}
+];
+
+/* 其他配置 Mock:新品拦截(产品分类·三档) / 尾程目的地(平台+国家·城市邮编) */
+M.otherIntercept=[
+  {cat:'3C数码',t1:{lo:'',hi:'-4'},t2:{lo:'-4',hi:'3'},t3:{lo:'3',hi:''}},
+  {cat:'户外',t1:{lo:'',hi:'-4'},t2:{lo:'-4',hi:'1'},t3:{lo:'1',hi:''}},
+  {cat:'箱包',t1:{lo:'',hi:'-5'},t2:{lo:'-5',hi:'2'},t3:{lo:'2',hi:''}},
+  {cat:'家居',t1:{lo:'',hi:'-4'},t2:{lo:'-4',hi:'3'},t3:{lo:'3',hi:''}}
+];
+M.otherDest=[
+  {plat:'eBay',country:'美国',city:'Los Angeles',zip:'90001'},
+  {plat:'eBay',country:'美国',city:'New York',zip:'10024'},
+  {plat:'eBay',country:'英国',city:'London',zip:'SW1A 1AA'},
+  {plat:'eBay',country:'德国',city:'Frankfurt',zip:'60313'}
+];
+
+/* ============================================================
+   页面:其他配置(左侧Tab,页内直接编辑)
+   ============================================================ */
+const OTHER_TABS=[{k:'intercept',n:'新品拦截配置'},{k:'dest',n:'尾程目的地配置'}];
+function pageOtherConf(){
+  const tab=S.activeTab.other||'intercept';
+  const nav=OTHER_TABS.map(t=>`<div class="conf-nav-item ${tab===t.k?'active':''}" onclick="switchOtherTab('${t.k}')">${t.n}</div>`).join('');
+  let panel='';
+  if(tab==='dest')panel=otherDestPanel();else panel=otherInterceptPanel();
+  return `<div class="conf-wrap">
+    <div class="conf-nav">${nav}</div>
+    <div class="conf-panel">${panel}</div>
+  </div>`;
+}
+function switchOtherTab(t){S.activeTab.other=t;render()}
+/* Tab1 新品拦截配置:产品分类 × 三档毛利率差异范围 */
+function otherInterceptPanel(){
+  const rangeCell=t=>`<div class="range-cell"><input class="input" style="width:60px" value="${t.lo}" placeholder="-∞"><span>~</span><input class="input" style="width:60px" value="${t.hi}" placeholder="+∞"><span>%</span></div>`;
+  const rows=M.otherIntercept.map((r,i)=>`<tr>
+    <td><input class="input" style="width:150px" value="${r.cat}" placeholder="请输入产品分类"></td>
+    <td>${rangeCell(r.t1)}</td>
+    <td>${rangeCell(r.t2)}</td>
+    <td>${rangeCell(r.t3)}</td>
+    <td class="nowrap"><a class="btn-link danger" onclick="delOtherRow('intercept',${i})">删除</a></td>
+  </tr>`).join('');
+  return `<div class="tip-bar info">按「竞品毛利率 − 必要销售毛利率」的差异判断新品发货：<b>①直接拦截</b>=生成拦截单并通知开发，不走审批；<b>②拦截审核</b>=生成拦截单进入飞书审批；<b>③无需拦截</b>=正常发货继续监控。输入框留空表示 −∞ / +∞。</div>
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn" onclick="addOtherRow('intercept')">+ 新增分类配置</button><span style="flex:1"></span><button class="btn btn-primary" onclick="toast('新品拦截配置已保存')">保存配置</button></div>
+  <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th style="width:180px">产品分类</th><th>直接拦截（毛利率差异范围）</th><th>拦截审核（毛利率差异范围）</th><th>无需拦截（毛利率差异范围）</th><th style="width:70px">操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+/* Tab2 尾程目的地配置:平台+国家 × 城市/邮编(一一对应,可多条) */
+function otherDestPanel(){
+  const rows=M.otherDest.map((r,i)=>`<tr>
+    <td><select class="select" style="width:100%"><option ${r.plat==='eBay'?'selected':''}>eBay</option></select></td>
+    <td><input class="input" style="width:150px" value="${r.country}" placeholder="请输入国家"></td>
+    <td><input class="input" style="width:180px" value="${r.city}" placeholder="请输入城市"></td>
+    <td><input class="input" style="width:150px" value="${r.zip}" placeholder="请输入邮编"></td>
+    <td class="nowrap"><a class="btn-link danger" onclick="delOtherRow('dest',${i})">删除</a></td>
+  </tr>`).join('');
+  return `<div class="tip-bar info">同一「平台 + 国家」可维护多组城市、邮编（如美国多仓城市），<b>城市与邮编一一对应</b>；用于尾程运费试算的目的地取值。</div>
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn" onclick="addOtherRow('dest')">+ 新增目的地</button><span style="flex:1"></span><button class="btn btn-primary" onclick="toast('尾程目的地配置已保存')">保存配置</button></div>
+  <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th style="width:120px">平台</th><th>国家</th><th>城市</th><th>邮编</th><th style="width:70px">操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+/* 行增删(页内直接编辑) */
+function addOtherRow(tab){
+  if(tab==='intercept')M.otherIntercept.push({cat:'',t1:{lo:'',hi:''},t2:{lo:'',hi:''},t3:{lo:'',hi:''}});
+  else M.otherDest.push({plat:'eBay',country:'',city:'',zip:''});
+  render();
+}
+function delOtherRow(tab,i){
+  confirmBox('确认删除？','删除后该行配置将立即失效。',()=>{
+    (tab==='intercept'?M.otherIntercept:M.otherDest).splice(i,1);
+    toast('已删除');render();
+  },{okTxt:'确认删除',danger:true});
+}
+
+M.feeMap = [
+  {code:'MAP001',src:'采购单价',target:'C004 采购成本',plat:'eBay',rule:'直采取未税单价',eff:'2026-08-01',st:'启用'},
+  {code:'MAP002',src:'头程物流费',target:'C011 头程运费',plat:'eBay',rule:'按版本清洗回写值',eff:'2026-08-01',st:'启用'},
+  {code:'MAP003',src:'尾程派送费',target:'C021 尾程运费',plat:'eBay',rule:'按订单实际派送费',eff:'2026-08-01',st:'启用'},
+  {code:'MAP004',src:'平台成交费',target:'C031 佣金',plat:'eBay',rule:'eBay成交费13%',eff:'2026-08-01',st:'启用'},
+  {code:'MAP005',src:'退款损失',target:'C033 退款率',plat:'eBay',rule:'按退款金额比例',eff:'2026-08-01',st:'启用'},
+  {code:'MAP006',src:'推广费用',target:'C034 广告费比例',plat:'eBay',rule:'按广告实际消耗',eff:'2026-08-01',st:'启用'},
+  {code:'MAP007',src:'销售税',target:'C032 税率',plat:'eBay',rule:'按站点税率',eff:'2026-08-01',st:'停用'}
+];
+
+/* ---------- 状态 ---------- */
+const S = {page:'l2',selected:{},expanded:{},query:{},activeTab:{ver:'latest',freight:'first',wb:'l2'},collapsed:false,pageIds:{}};
+
+/* ============================================================
+   工具函数
+   ============================================================ */
+function $(s,p=document){return p.querySelector(s)}
+function $$(s,p=document){return [...p.querySelectorAll(s)]}
+function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function tag(st,txt){const m={success:'success',warning:'warning',danger:'danger',info:'info',default:'default',purple:'purple',cyan:'cyan',orange:'orange'};return `<span class="tag ${m[st]||'default'}">${txt}</span>`}
+function execTag(st){if(st==='执行完成')return tag('success',st);if(st==='执行异常')return tag('danger',st);if(st==='待执行')return tag('warning',st);return tag('default',st)}
+/* 异常标签列:超过2个收拢,悬停显示完整 */
+function renderExecTags(tags){
+  if(!tags||!tags.length)return '<span class="text-muted">-</span>';
+  if(tags.length<=2)return tags.map(t=>tag('danger',t)).join(' ');
+  const full=tags.map(t=>'<div>'+t+'</div>').join('');
+  return tags.slice(0,2).map(t=>tag('danger',t)).join(' ')+`<span class="tag default tag-pop">共${tags.length}个<span class="tag-pop-tip">${full}</span></span>`;
+}
+function auditTag(st){if(st==='已发布')return tag('info',st);if(st==='已作废')return tag('default',st);if(st==='待审核')return tag('warning',st);return tag('default',st)}
+function rangeTag(st){return tag(st==='启用'?'success':'default',st)}
+function devTag(v){const cls=v>=0?'up':'down';const ic=v>=0?'▲':'▼';return `<span class="deviation ${cls}">${ic} ${Math.abs(v)}%</span>`}
+function toast(msg,type='success'){const ic={success:'✓',warning:'⚠',error:'✕',info:'ℹ'}[type];const t=el(`<div class="toast ${type}"><span class="ic">${ic}</span><span>${msg}</span></div>`);$('#toastWrap').appendChild(t);setTimeout(()=>{t.style.opacity=0;t.style.transform='translateY(-8px)';setTimeout(()=>t.remove(),200)},2500)}
+
+/* Modal/Drawer 通用 */
+function openModal(title,bodyHtml,footerHtml,opt={}){
+  const w=opt.w?` style="width:${opt.w}px"`:'';
+  const mask=el(`<div class="modal-mask show"><div class="modal"${w}><div class="modal-header"><span class="modal-title">${title}</span><span class="modal-close" onclick="closeModal()">×</span></div><div class="modal-body">${bodyHtml}</div>${footerHtml?`<div class="modal-footer">${footerHtml}</div>`:''}</div></div>`);
+  mask.addEventListener('click',e=>{if(e.target===mask)closeModal()});
+  $('#modalRoot').appendChild(mask);
+  return mask;
+}
+function closeModal(){$$('#modalRoot>.modal-mask').forEach(m=>m.remove())}
+function openDrawer(title,bodyHtml){
+  const mask=el(`<div class="drawer-mask"></div>`);
+  mask.addEventListener('click',closeDrawer);
+  const dr=el(`<div class="drawer"><div class="drawer-header"><span style="font-size:16px;font-weight:600">${title}</span><span class="modal-close" onclick="closeDrawer()">×</span></div><div class="drawer-body">${bodyHtml}</div></div>`);
+  $('#drawerRoot').innerHTML='';
+  $('#drawerRoot').appendChild(mask);
+  $('#drawerRoot').appendChild(dr);
+  setTimeout(()=>{mask.classList.add('show');dr.classList.add('show')},10);
+}
+function closeDrawer(){$$('#drawerRoot>.drawer-mask').forEach(m=>m.remove());$$('#drawerRoot>.drawer').forEach(d=>d.classList.remove('show'));setTimeout(()=>{$$('#drawerRoot>.drawer').forEach(d=>d.remove())},250)}
+
+function confirmBox(title,content,onOk,opt={}){
+  const okTxt=opt.okTxt||'确认';const okClass=opt.danger?'btn-danger':'btn-primary';
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn ${okClass}" id="cfOk">${okTxt}</button>`;
+  openModal(title,`<div style="padding:4px 0;font-size:14px;line-height:1.6">${content}</div>`,footer,{w:480});
+  $('#cfOk').onclick=()=>{closeModal();onOk&&onOk()};
+}
+
+/* 查询区渲染 */
+function queryBarRender(fields,toggleTxt='查询条件'){
+  const items=fields.map(f=>{
+    if(f.type==='select')return `<div class="query-item"><label>${f.label}</label><select class="select" data-q="${f.k}">${f.opts.map(o=>`<option value="${o.v}"${o.sel?' selected':''}>${o.t}</option>`).join('')}</select></div>`;
+    if(f.type==='platSite')return `<div class="query-item"><label>平台/站点</label><div style="display:flex;align-items:center;gap:6px"><select class="select" style="width:92px" data-q="plat" onchange="platSiteChange(this)"><option value="">全部</option><option value="eBay">eBay</option></select><div class="ms-drop"><div class="ms-toggle" onclick="toggleMsDrop(this)">全部站点 <span class="arrow" style="font-size:10px">▾</span></div><div class="ms-menu">${msSiteHtml(['US','UK','DE'])}</div></div></div></div>`;
+    if(f.type==='execNo')return `<div class="query-item"><label>执行编号</label><div style="display:flex;align-items:center;gap:6px"><select class="select" style="width:150px">${(f.opts||['价格执行编号','运费执行编号']).map((o,oi)=>`<option ${oi===0?'selected':''}>${o}</option>`).join('')}</select><input class="input" placeholder="请输入编号" data-q="execNo"></div></div>`;
+    if(f.type==='blank')return '<div class="query-item"></div>';
+    return `<div class="query-item"><label>${f.label}</label><input class="input" placeholder="${f.ph||''}" data-q="${f.k}"></div>`;
+  }).join('');
+  return `<div class="query-bar"><div class="query-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.nextElementSibling.classList.toggle('hide');this.querySelector('.arrow').textContent=this.nextElementSibling.classList.contains('show')?'收起 ▴':'展开 ▾'"><span class="qt-l">${toggleTxt}</span><span class="arrow">收起 ▴</span></div><div class="query-body show"><div class="query-grid">${items}</div><div class="query-actions"><span class="grow"></span><button class="btn btn-primary" onclick="doQuery(this)">查询</button><button class="btn" onclick="resetQuery(this)">重置</button></div></div></div>`;
+}
+/* 平台/站点级联查询:站点多选下拉 */
+const PLAT_SITES={'eBay':['US','UK','DE']};
+function msSiteHtml(sites){return sites.map(x=>`<div class="ms-opt" onclick="msPickSite(this)">${x}</div>`).join('')}
+function toggleMsDrop(el){document.querySelectorAll('.ms-drop.open').forEach(d=>{if(d!==el.closest('.ms-drop'))d.classList.remove('open')});el.closest('.ms-drop').classList.toggle('open')}
+function msPickSite(el){el.classList.toggle('sel');const drop=el.closest('.ms-drop');const vals=[...drop.querySelectorAll('.ms-opt.sel')].map(o=>o.textContent.trim());drop.querySelector('.ms-toggle').innerHTML=(vals.length?vals.join('/'):(drop.dataset.ph||'全部站点'))+' <span class="arrow" style="font-size:10px">▾</span>'}
+function dimChange(sel){
+  const v=sel.value;
+  const show=(id,on)=>{const el=$(id);if(el)el.style.display=on?'':'none'};
+  show('#dfPlat',v.includes('平台'));show('#dfSite',v.includes('平台'));
+  show('#dfProvider',v.includes('海外仓服务商'));show('#dfCountry',v.includes('国家'));
+}
+function feeCalcPlatChange(sel){const sites=sel.value?(PLAT_SITES[sel.value]||[]):['US','UK','DE'];const drop=$('#feeSiteDrop');if(!drop)return;drop.querySelector('.ms-menu').innerHTML=msSiteHtml(sites)||'<div class="hint" style="margin:0">该平台暂无站点</div>';drop.querySelector('.ms-toggle').innerHTML='全部站点 <span class="arrow" style="font-size:10px">▾</span>'}
+function platSiteChange(sel){const sites=sel.value?(PLAT_SITES[sel.value]||[]):['US','UK','DE'];const drop=sel.parentElement.querySelector('.ms-drop');drop.querySelector('.ms-menu').innerHTML=msSiteHtml(sites)||'<div class="hint" style="margin:0">该平台暂无站点</div>';drop.querySelector('.ms-toggle').innerHTML='全部站点 <span class="arrow" style="font-size:10px">▾</span>'}
+function doQuery(btn){toast('已按条件查询','info')}
+function resetQuery(btn){$$('.query-body .input,.query-body .select').forEach(i=>{if(i.tagName==='SELECT')i.selectedIndex=0;else i.value=''});$$('.ms-drop').forEach(d=>{d.classList.remove('open');d.querySelectorAll('.ms-opt.sel').forEach(o=>o.classList.remove('sel'));const t=d.querySelector('.ms-toggle');if(t)t.innerHTML='全部站点 <span class="arrow" style="font-size:10px">▾</span>';const m=d.querySelector('.ms-menu');if(m)m.innerHTML=msSiteHtml(['US','UK','DE'])});toast('已重置查询条件','info')}
+
+/* 分页渲染 */
+function pagination(total,page=1,size=10){
+  const pages=Math.max(1,Math.ceil(total/size));
+  let btns='';
+  btns+=`<button class="pg-btn" ${page<=1?'disabled':''}><</button>`;
+  for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=page-1&&i<=page+1)){btns+=`<button class="pg-btn ${i===page?'active':''}">${i}</button>`}else if(i===page-2||i===page+2){btns+=`<button class="pg-btn" disabled>...</button>`}}
+  btns+=`<button class="pg-btn" ${page>=pages?'disabled':''}>></button>`;
+  return `<div class="pagination"><span>共 ${total} 条</span><div class="pg-r">${btns}<select class="select pg-size"><option>10条/页</option><option>20条/页</option><option>50条/页</option><option>100条/页</option></select><span style="margin-left:8px">前往 <input class="input" style="width:48px;height:28px;text-align:center;padding:0 4px" value="${page}"> 页</span></div></div>`;
+}
+
+/* 批量操作栏 */
+function batchBar(selectedKey,actions){
+  const cnt=Object.keys(S.selected[selectedKey]||{}).filter(k=>S.selected[selectedKey][k]).length;
+  if(!cnt)return '';
+  const ops=actions.map(a=>`<button class="btn btn-sm" onclick="${a.onclick}">${a.t}</button>`).join('');
+  return `<div class="batch-bar"><div class="bl"><span>已选择 ${cnt} 项</span><div class="ops">${ops}</div></div><a class="btn-link" onclick="clearSel('${selectedKey}')">取消选择</a></div>`;
+}
+function clearSel(k){S.selected[k]={};render()}
+function toggleSel(k,id,e){S.selected[k]=S.selected[k]||{};if(e.checked)S.selected[k][id]=true;else delete S.selected[k][id];render()}
+function toggleAll(k,checked){const ids=(S.pageIds&&S.pageIds[k])||[];S.selected[k]={};if(checked)ids.forEach(id=>S.selected[k][id]=true);render()}
+
+/* ============================================================
+   导航渲染
+   ============================================================ */
+function renderNav(){
+  const cur=S.page;
+  // 找到当前页所属一级
+  let curTop='price';
+  let curTopItem=NAV.find(n=>n.k==='price');
+  NAV.forEach(n=>{if(n.k===cur){curTop=cur;curTopItem=n}if(n.subs&&n.subs.some(s=>s.k===cur)){curTop=n.k;curTopItem=n}});
+
+  // ===== 顶部一级菜单（无图标） =====
+  const topHtml=NAV.map(n=>{
+    const isActive=n.k===curTop;
+    return `<a class="topnav-item ${isActive?'active':''}" onclick="clickTop('${n.k}')"><span>${n.n}</span></a>`;
+  }).join('');
+  $('#topnavScroll').innerHTML=topHtml;
+
+  // ===== 左侧二级菜单（仅当前一级） =====
+  const st=$('#sidebarTitle');if(st)st.textContent=curTopItem?curTopItem.n:'';
+  let subHtml='';
+  if(curTopItem&&curTopItem.subs){
+    const visibleSubs=curTopItem.subs.filter(s=>!s.hidden);
+    subHtml=visibleSubs.map(s=>{
+      if(s.group)return `<div class="sub-group-title">${s.n}</div>`;
+      const strike=(s.k==='ver3'||s.k==='clear-conf')?' nav-strike':'';
+      return `<div class="sub-item${strike} ${s.k===cur?'active':''}" onclick="go('${s.k}')"><span class="dot"></span>${s.n}</div>`;
+    }).join('');
+  }
+  $('#navScroll').innerHTML=subHtml;
+}
+function clickTop(k){
+  const n=NAV.find(x=>x.k===k);
+  if(!n)return;
+  if(n.subs){
+    // 进入该一级的第一个可点击子项
+    const first=n.subs.find(s=>!s.group&&!s.hidden);
+    if(first)go(first.k);else toast('「'+n.n+'」暂无可访问页面','info');
+  }else{
+    toast('「'+n.n+'」为现有系统菜单，本次原型仅展示','info');
+  }
+}
+function navDummy(n){toast('「'+n+'」为现有系统菜单，本次原型仅展示','info')}
+function toggleSidebar(){$('#sidebar').classList.toggle('collapsed')}
+
+/* ============================================================
+   页面路由
+   ============================================================ */
+function go(page){
+  S.page=page;
+  S.selected={};
+  S.expanded={};
+  renderNav();
+  render();
+  $('#content').scrollTop=0;
+}
+function render(){
+  const p=S.page;
+  const meta=PAGE_TITLE[p]||['','',''];
+  $('#breadcrumb').innerHTML = p==='p-hidden'?'系统设置 / <b>订单费用映射</b>' : `定价 / <b>${meta[1]}</b>`;
+  // 标题后缀（待确认 / 此版本不开发）
+  const suffixMap={'adj-mgr':'（待确认）','adj-conf':'（待确认）','ver3':'（此版本不开发）','clear-conf':'（此版本不开发）'};
+  const suffix= suffixMap[p]?` <span style="font-size:13px;font-weight:400;color:var(--text-2);background:var(--th-bg);border:1px solid var(--border);padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle">${suffixMap[p]}</span>`:'';
+  let html=`<div class="page-title-row"><div><div class="page-title">${meta[0]}${suffix}</div><div class="page-subtitle">${meta[2]}</div></div></div>`;
+  let body='';
+  if(p==='l2')body=pageL2();
+  else if(p==='block')body=pageBlock();
+  else if(p==='adj-mgr')body=pagePlaceholder('调价建议管理','调价建议功能将在二期上线','一期仅建页面框架与菜单，不实现调价逻辑；二期实现调价建议生成 + 处理流程。');
+  else if(p==='sku')body=pageSku();
+  else if(p==='ver')body=pageVer();
+  else if(p==='ver3')body=pageVer3();
+  else if(p==='freight')body=pageFreight();
+  else if(p==='pool')body=pagePool();
+  else if(p==='profit')body=pageProfit();
+  else if(p==='fee-item')body=pageFeeItem();
+  else if(p==='fee-calc')body=pageFeeCalc();
+  else if(p==='rate-conf')body=pageRateConf();
+  else if(p==='clear-conf')body=pageClearConf();
+  else if(p==='other-conf')body=pageOtherConf();
+  else if(p==='adj-conf')body=pagePlaceholder('调价建议配置','调价建议配置将在二期开放','一期仅建页面框架与菜单，不实现调价逻辑；二期实现调价建议生成逻辑。');
+  else if(p==='p-hidden')body=pageFeeMap();
+  $('#content').innerHTML=html+body;
+}
+function pagePlaceholder(title,emptyT,desc){
+  return `<div class="tip-bar warning">⚠️ 本页面为一期占位框架，仅展示菜单与空数据占位，具体逻辑将在二期实现。</div>
+  <div class="query-bar">${queryBarRender([{k:'sku',label:'SKU',ph:'请输入'},{k:'plat',label:'平台',type:'select',opts:[{v:'',t:'全部'},{v:'eBay',t:'eBay'}]},{k:'cur',label:'当前售价',ph:''},{k:'type',label:'建议类型',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'成本变动'},{v:'2',t:'利润率偏离'},{v:'3',t:'季节性'}]}])}</div>
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn" disabled>批量处理</button><button class="btn" disabled>导出</button><span style="flex:1"></span><button class="btn-ghost btn">刷新</button></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>SKU</th><th>平台/站点</th><th>当前售价</th><th>建议售价</th><th>建议类型</th><th>建议生成时间</th><th>处理状态</th></tr></thead><tbody><tr><td colspan="7"><div class="empty"><div class="ic">📭</div><div class="t">${emptyT}</div><div class="d">${desc}</div></div></td></tr></tbody></table></div>`;
+}
+
+/* ============================================================
+   页面：L2 价格工作台
+   ============================================================ */
+function pageL2(){
+  const tab=S.activeTab.wb||'l2';
+  return `<div class="tabs">
+    <div class="tab ${tab==='l2'?'active':''}" onclick="switchWbTab('l2')">刊登销售价 <span class="count">${M.l2.length}</span></div>
+    <div class="tab ${tab==='l3'?'active':''}" onclick="switchWbTab('l3')"><span style="text-decoration:line-through">清库价</span> <span class="count">${M.l3.length}</span> <span style="font-size:12px;font-weight:400;color:var(--text-2);background:var(--th-bg);border:1px solid var(--border);padding:1px 6px;border-radius:3px;margin-left:2px">此版本不开发</span></div>
+  </div>
+  ${tab==='l2'?pageL2Table():pageL3()}`;
+}
+function switchWbTab(t){S.activeTab.wb=t;render()}
+/* 历史版本弹窗：平台+站点+SKU 维度，版本号最新在上（价格列按 L2/L3 口径展示） */
+function openVerHistory(plat,site,sku,src){
+  const isL3=src==='l3';
+  const data=isL3?M.ver3:M.ver;
+  const list=data.filter(x=>x.sku===sku&&x.plat===plat&&x.site===site&&x.verNo)
+    .sort((a,b)=>parseInt(b.verNo.split('.')[2])-parseInt(a.verNo.split('.')[2]));
+  const priceCell=x=>isL3
+    ?`<td class="num">${x.price!==null&&x.price!==undefined?x.price.toFixed(2)+' <span class="text-muted">'+x.cur+'</span>':'-'}</td>`
+    :`<td class="num">${x.priceN!==null&&x.priceN!==undefined?x.priceN.toFixed(2)+' <span class="text-muted">'+x.cur+'</span>':'-'}</td><td class="num">${x.priceA!==null&&x.priceA!==undefined?x.priceA.toFixed(2)+' <span class="text-muted">'+x.cur+'</span>':'-'}</td>`;
+  const rows=list.map(x=>`<tr><td class="mono">${x.verNo}${x.auditSt==='已发布'?tag('info','当前'):''}</td>${priceCell(x)}<td class="small text-muted">${x.auditTime||'-'}</td></tr>`).join('');
+  const headCells=isL3?'<th class="num">清库价</th>':'<th class="num">必要售价</th><th class="num">基准售价</th>';
+  const colSpan=isL3?3:4;
+  const footer=`<button class="btn" onclick="closeModal()">关闭</button>`;
+  openModal(`历史版本 · ${plat} / ${site} / ${sku}`,`
+    <div class="tip-bar info">版本维度：平台 + 站点 + SKU + 版本号唯一，版本号新的在上。</div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>版本号</th>${headCells}<th>审核时间</th></tr></thead><tbody>${rows||'<tr><td colspan="'+colSpan+'" style="text-align:center;color:var(--text-3)">暂无历史版本</td></tr>'}</tbody></table></div>`,footer,{w:isL3?560:680});
+}
+/* 计算同维度下一版本号（minor 自增） */
+function nextVerNo(plat,site,sku,src){
+  const data=src==='l3'?M.ver3:M.ver;
+  const list=data.filter(x=>x.sku===sku&&x.plat===plat&&x.site===site&&x.verNo);
+  if(!list.length)return 'V1.1.1';
+  const max=list.reduce((m,x)=>Math.max(m,parseInt(x.verNo.split('.')[2])),0);
+  return 'V1.1.'+(max+1);
+}
+/* 单条审核发布确认（版本维度：平台+站点+SKU+版本号唯一，V1.1.x 自增） */
+function auditPubOne(src,plat,site,sku){
+  const nv=nextVerNo(plat,site,sku,src);
+  confirmBox('是否发布此价格版本',`是否发布此价格版本，发布后旧版本价格审核状态改为：<b>已作废</b>，新版本号为：<b>${nv}</b>。`,()=>toast(`已发布，新版本号 ${nv}`));
+}
+/* 库存快照弹窗（L3 清库口径） */
+function openStockSnapshot(sku){
+  const snap={
+    '99999999':[
+      {wh:'美西海外仓',whType:'海外仓',qty:1200,age:75,cost:102000.00,seg:'0~90天',dep:0},
+      {wh:'美东海外仓',whType:'海外仓',qty:300,age:95,cost:25500.00,seg:'91~120天',dep:20},
+      {wh:'德国海外仓',whType:'海外仓',qty:500,age:140,cost:42500.00,seg:'121~150天',dep:30},
+      {wh:'英国海外仓',whType:'海外仓',qty:200,age:200,cost:17000.00,seg:'181天及以上',dep:100}],
+    '33093309':[
+      {wh:'美西海外仓',whType:'海外仓',qty:800,age:160,cost:76000.00,seg:'151~180天',dep:50},
+      {wh:'美东海外仓',whType:'海外仓',qty:150,age:110,cost:14250.00,seg:'91~120天',dep:20}],
+    '77337733':[
+      {wh:'德国海外仓',whType:'海外仓',qty:2000,age:130,cost:32000.00,seg:'121~150天',dep:30},
+      {wh:'美西海外仓',whType:'海外仓',qty:600,age:85,cost:9600.00,seg:'0~90天',dep:0}],
+    '22082208':[
+      {wh:'英国海外仓',whType:'海外仓',qty:400,age:170,cost:48000.00,seg:'151~180天',dep:50}],
+    '22102210':[
+      {wh:'美西海外仓',whType:'海外仓',qty:5000,age:190,cost:40000.00,seg:'181天及以上',dep:100}]
+  };
+  const list=snap[sku]||[];
+  const rows=list.map(x=>{
+    const recycle=x.cost*(1-x.dep/100);
+    return `<tr><td>${x.wh}</td><td class="center">${tag('cyan',x.whType)}</td><td class="num">${x.qty}</td><td class="num">${x.age} 天</td><td class="num">${x.cost.toFixed(2)} <span class="cur">CNY</span></td><td class="num">${x.seg}</td><td class="num">${x.dep}%</td><td class="num" style="color:#FA541C;font-weight:600">${recycle.toFixed(2)} <span class="cur">CNY</span></td><td class="small text-muted">2026-08-10 08:00</td></tr>`;
+  }).join('');
+  openModal(`库存快照 · ${sku}`,`
+    <div class="tip-bar info">快照时间：2026-08-10 08:00。减值比例按「清库回收率配置」匹配库龄段取值；回收本金 = 库存成本 ×（1 − 减值比例）。</div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>仓库</th><th class="center">仓库类型</th><th class="num">库存</th><th class="num">库龄</th><th class="num">库存成本</th><th class="num">匹配库龄段</th><th class="num">减值比例</th><th class="num">回收本金</th><th>快照时间</th></tr></thead><tbody>${rows||'<tr><td colspan="9" style="text-align:center;color:var(--text-3)">暂无快照</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:960});
+}
+/* ============================================================
+   页面：新品发货拦截
+   ============================================================ */
+M.block=[
+  {id:'LJ260810000001',img:'🎧',plat:'eBay',site:'US',sku:'99999999',name:'蓝牙降噪耳机 Pro',l1:45.90,l1Rate:23,cur:'USD',comp:39.99,rateN:18,pct:24,fixedSale:24.33,
+   st:'待处理',result:'',handler:'张无忌',genT:'2026-08-10 08:05',procT:'',
+   nodes:[{no:'XQ2608001',type:'新品需求单',st:'待审批'},{no:'CG260820',type:'采购单',st:'待下单'}],
+   fs:{st:'审批中',by:'宋远桥',
+      flow:[{n:'发起拦截',u:'张无忌',t:'2026-08-10 08:05',s:'done'},{n:'开发负责人审批',u:'宋远桥',t:'',s:'current'},{n:'供应链确认',u:'俞莲舟',t:'',s:'wait'},{n:'执行拦截/放行',u:'系统',t:'',s:'wait'}]}},
+  {id:'LJ260810000002',img:'⌚',plat:'eBay',site:'UK',sku:'22082208',name:'智能手表运动版',l1:60.00,l1Rate:24,cur:'GBP',comp:52.50,rateN:20,pct:24,fixedSale:31.20,remark:'竞品毛利率低于必要毛利率，直接拦截，不走飞书',
+   st:'已处理',result:'拦截发货',handler:'周芷若',genT:'2026-08-10 09:20',procT:'2026-08-10 15:42',
+   nodes:[{no:'CG260812',type:'采购单',st:'已下单'},{no:'JH260816',type:'计划单',st:'待排产'}],
+   fs:null},
+  {id:'LJ260811000003',img:'🔦',plat:'eBay',site:'DE',sku:'77337733',name:'强光手电筒 USB',l1:5.50,l1Rate:20,cur:'EUR',comp:6.20,rateN:17,pct:24,fixedSale:3.08,remark:'竞品毛利率高于必要毛利率，继续发货',
+   st:'已处理',result:'继续发货',handler:'殷梨亭',genT:'2026-08-11 10:10',procT:'2026-08-11 16:00',
+   nodes:[{no:'JH260815',type:'计划单',st:'生产中'},{no:'TC260819',type:'头程单',st:'待发货'}],
+   fs:{st:'已同意',by:'宋远桥',
+      flow:[{n:'发起拦截',u:'殷梨亭',t:'2026-08-11 10:10',s:'done'},{n:'开发负责人审批',u:'宋远桥',t:'2026-08-11 11:00',s:'done'},{n:'供应链确认',u:'俞莲舟',t:'2026-08-11 14:20',s:'done'},{n:'执行放行',u:'系统',t:'2026-08-11 16:00',s:'done'}]}},
+  {id:'LJ260812000004',img:'🔌',plat:'eBay',site:'US',sku:'22102210',name:'USB-C 数据线 1m',l1:6.50,l1Rate:22,cur:'USD',comp:3.88,rateN:16,pct:24,fixedSale:3.51,
+   st:'待处理',result:'',handler:'小昭',genT:'2026-08-12 08:00',procT:'',
+   nodes:[{no:'TC260818',type:'头程单',st:'运输中'},{no:'WY260822',type:'外验单',st:'待验货'}],
+   fs:{st:'审批中',by:'俞莲舟',
+      flow:[{n:'发起拦截',u:'张无忌',t:'2026-08-12 08:00',s:'done'},{n:'开发负责人审批',u:'宋远桥',t:'2026-08-12 09:10',s:'done'},{n:'供应链确认',u:'俞莲舟',t:'',s:'current'},{n:'执行拦截/放行',u:'系统',t:'',s:'wait'}]}}
+];
+// 竞品价格每日记录（按拦截编号）
+M.compHistory={
+  'LJ260810000001':[
+    {link:'ebay.com/itm/293847211',price:41.50,t:'2026-08-08 06:00'},
+    {link:'ebay.com/itm/293847211',price:40.80,t:'2026-08-09 06:00'},
+    {link:'ebay.com/itm/293847211',price:39.99,t:'2026-08-10 06:00'}],
+  'LJ260810000002':[
+    {link:'ebay.co.uk/itm/154882901',price:55.00,t:'2026-08-08 06:00'},
+    {link:'ebay.co.uk/itm/154882901',price:53.80,t:'2026-08-09 06:00'},
+    {link:'ebay.co.uk/itm/154882901',price:52.50,t:'2026-08-10 06:00'}],
+  'LJ260811000003':[
+    {link:'ebay.de/itm/115509823',price:5.90,t:'2026-08-09 06:00'},
+    {link:'ebay.de/itm/115509823',price:6.05,t:'2026-08-10 06:00'},
+    {link:'ebay.de/itm/115509823',price:6.20,t:'2026-08-11 06:00'}],
+  'LJ260812000004':[
+    {link:'ebay.com/itm/271645382',price:4.50,t:'2026-08-10 06:00'},
+    {link:'ebay.com/itm/271645382',price:4.15,t:'2026-08-11 06:00'},
+    {link:'ebay.com/itm/271645382',price:3.88,t:'2026-08-12 06:00'}]
+};
+function pageBlock(){
+  const rows=M.block.map((r,i)=>{
+    // 竞品毛利率 = 1 − 基于售价%费用 − 已知具体金额费用 ÷ 竞品售价；差异 = 竞品毛利率 − 必要销售毛利率
+    const compRate=(1-r.pct/100-r.fixedSale/r.comp)*100;
+    const marginDiff=compRate-r.rateN;
+    return `<tr>
+      <td class="mono small">${r.id}</td>
+      <td><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+      <td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td>
+      <td><div class="cell-stack"><span class="cell-main mono small">${r.sku}</span><span class="cell-sub">${r.name}</span></div></td>
+      <td class="num"><div class="cell-stack"><span class="cell-main">${r.l1.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.l1Rate}%</span></div></td>
+      <td class="num"><span class="cell-main tbl-link" onclick="openCompPrice(${i})">${r.comp.toFixed(2)} <span class="text-muted">${r.cur}</span></span></td>
+      <td class="num"><div class="cell-stack"><span class="cell-main tbl-link" onclick="openMarginDiff(${i})">${marginDiff>=0?'+':''}${marginDiff.toFixed(1)}%</span><span class="cell-sub">竞品毛利率 ${compRate.toFixed(1)}%</span></div></td>
+      <td class="center"><div class="cell-stack"><span>${r.st==='待处理'?tag('warning','待处理'):tag('success','已处理')}</span>${r.result?`<span>${r.result==='拦截发货'?tag('danger','拦截发货'):tag('success','继续发货')}</span>`:''}</div></td>
+      <td class="center">${r.fs?`<span class="tbl-link" onclick="openFsFlow(${i})">${r.fs.st==='已同意'?tag('success','已同意'):tag('info','审批中')}</span><div class="cell-sub">${r.fs.by}</div>`:'<span class="text-muted">-</span>'}</td>
+      <td><div class="cell-stack"><span class="cell-main mono small tbl-link" onclick="openNodeDoc(${i})">${r.nodes[0].no}${r.nodes.length>1?` <span class="text-muted">+${r.nodes.length-1}</span>`:''}</span><span class="cell-sub">${r.nodes[0].type} · ${r.nodes[0].st}</span></div></td>
+      <td class="small">${r.remark||'<span class="text-muted">-</span>'}</td>
+      <td class="small"><div class="cell-stack"><span class="cell-main" style="font-weight:500">${r.handler}<span class="text-muted" style="font-weight:400">（产品开发）</span></span><span class="cell-sub text-muted">${r.procT||'待处理'}</span></div></td>
+      <td class="small text-muted nowrap">${r.genT}</td>
+    </tr>`;
+  }).join('');
+  return `${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'id',label:'拦截编号',ph:''},
+    {k:'sku',label:'SKU',ph:''},
+    {k:'st',label:'处理状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待处理'},{v:'2',t:'已处理'}]},
+    {k:'result',label:'处理结果',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'拦截发货'},{v:'2',t:'继续发货'}]},
+    {k:'procT',label:'处理完成时间',ph:'开始~结束'},
+    {k:'genT',label:'生成时间',ph:'开始~结束'}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><span style="flex:1"></span><button class="btn-ghost btn">导出</button></div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:1800px"><thead><tr>
+    <th>拦截编号</th><th>平台/站点</th><th style="width:48px">主图</th><th>SKU</th><th class="num">开品推荐售价</th><th class="num">竞品价格</th><th class="num">竞品毛利率差异</th><th class="center">处理状态/结果</th><th class="center">飞书审批流</th><th>当前节点</th><th>处理备注</th><th>处理信息</th><th>生成时间</th>
+  </tr></thead><tbody>${rows||'<tr><td colspan="13"><div class="empty"><div class="ic">📭</div><div class="t">暂无拦截记录</div></div></td></tr>'}</tbody></table>${pagination(M.block.length,1,10)}</div>`;
+}
+/* 竞品毛利率差异计算过程 */
+function openMarginDiff(i){
+  const r=M.block[i];
+  // 竞品毛利率 = 1 − 基于售价%费用 − 已知具体金额的费用 ÷ 竞品售价
+  const compRate=(1-r.pct/100-r.fixedSale/r.comp)*100;
+  const marginDiff=compRate-r.rateN;
+  openModal('竞品毛利率差异 · '+r.sku,`
+    <div class="tip-bar info">竞品毛利率 = 1 − 基于售价%费用 − 已知具体金额的费用 ÷ 竞品售价<br>竞品毛利率差异 = 竞品毛利率 − 必要销售毛利率</div>
+    <div class="form-section-title">① 已知具体金额的费用（折算销售币种）</div>
+    <div class="calc-step">8项固定成本 CNY 求和后按汇率折算 = <span class="val">${r.fixedSale.toFixed(2)} ${r.cur}</span>（单件）</div>
+    <div class="form-section-title">② 竞品毛利率（代入竞品售价 ${r.comp.toFixed(2)} ${r.cur}）</div>
+    <div class="calc-step">
+      <div><span class="lbl">公式</span>　竞品毛利率 = 1 − 基于售价%费用 − 费用 ÷ 竞品售价</div>
+      <div style="margin-top:4px"><span class="lbl">代入</span>　= 1 − ${r.pct}% − ${r.fixedSale.toFixed(2)} ÷ ${r.comp.toFixed(2)}</div>
+      <div style="margin-top:4px"><span class="lbl">求解</span>　= ${(1-r.pct/100).toFixed(2)} − ${(r.fixedSale/r.comp).toFixed(4)} = <span class="val">${compRate.toFixed(1)}%</span></div>
+    </div>
+    <div class="form-section-title">③ 竞品毛利率差异</div>
+    <div class="calc-step">
+      <div><span class="lbl">公式</span>　竞品毛利率差异 = 竞品毛利率 − 必要销售毛利率</div>
+      <div style="margin-top:4px"><span class="lbl">代入</span>　= ${compRate.toFixed(1)}% − ${r.rateN}% = <span class="val">${marginDiff>=0?'+':''}${marginDiff.toFixed(1)}%</span></div>
+    </div>
+    <div class="calc-final">${marginDiff>=0?'+':''}${marginDiff.toFixed(1)}% ${marginDiff<0?'（低于必要毛利率，触发拦截）':'（达标，可正常发货）'}</div>`,
+    `<button class="btn" onclick="closeModal()">关闭</button>`,{w:720});
+}
+/* 单据信息弹窗（当前节点，支持多条单据） */
+function openNodeDoc(i){
+  const r=M.block[i];
+  const fields=(n)=>({
+    '新品需求单':[['需求单号',n.no],['需求类型','新品开发'],['关联SKU',r.sku+' '+r.name],['目标平台',r.plat+' / '+r.site],['预计开品价',r.l1.toFixed(2)+' '+r.cur],['需求人','周芷若'],['提交时间','2026-08-01 10:00'],['单据状态',n.st],['当前环节','选品评审']],
+    '采购单':[['采购单号',n.no],['采购类型','首批'],['关联SKU',r.sku+' '+r.name],['采购数量','1,000 件'],['供应商','光明顶供应'],['采购金额','¥ 52,000.00'],['下单人','曾阿牛'],['下单时间','2026-08-12 14:30'],['单据状态',n.st]],
+    '计划单':[['计划单号',n.no],['计划类型','生产计划'],['关联SKU',r.sku+' '+r.name],['计划数量','5,000 件'],['工厂','昆仑山工厂'],['交期','2026-09-05'],['计划员','小昭'],['创建时间','2026-08-15 09:00'],['单据状态',n.st]],
+    '头程单':[['头程单号',n.no],['运输方式','海运整柜'],['关联SKU',r.sku+' '+r.name],['件数','120 箱'],['毛重','480 kg'],['起运港','上海'],['目的港','洛杉矶'],['单据状态',n.st],['当前节点','海运在途']],
+    '外验单':[['外验单号',n.no],['验货类型','全检'],['关联SKU',r.sku+' '+r.name],['验货数量','1,000 件'],['验货机构','第三方质检'],['验货结果','待出具'],['单据状态',n.st]]
+  }[n.type]||[]);
+  const sections=r.nodes.map((n,idx)=>{
+    const kv=fields(n);
+    const thead=kv.map(([k])=>`<th>${k}</th>`).join('');
+    const tdata=kv.map(([,v])=>`<td style="font-weight:500">${v}</td>`).join('');
+    return `<div class="dsection"><div class="dsection-title">单据 ${idx+1}/${r.nodes.length} · ${n.type} · ${n.no}</div>
+      <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l);overflow-x:auto"><table class="tbl"><thead><tr>${thead}</tr></thead><tbody><tr>${tdata}</tr></tbody></table></div></div>`;
+  }).join('');
+  openModal(`当前节点单据 · ${r.sku}`,`
+    <div class="tip-bar info">该 SKU 当前共 <b>${r.nodes.length}</b> 条在途单据。</div>
+    ${sections}`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:880});
+}
+/* 竞品价格弹窗：每日获取记录 */
+function openCompPrice(i){
+  const r=M.block[i];
+  const list=M.compHistory[r.id]||[];
+  const rows=list.map((h,idx)=>{
+    const isLatest=idx===list.length-1;
+    return `<tr><td class="mono small">${h.link}</td><td class="num">${h.price.toFixed(2)} <span class="text-muted">${r.cur}</span>${isLatest?tag('info','最新'):''}</td><td class="small text-muted">${h.t}</td></tr>`;
+  }).join('');
+  openModal(`竞品价格 · ${r.plat}/${r.site} · ${r.sku}`,`
+    <div class="tip-bar info">开品推荐售价 ${r.l1.toFixed(2)} ${r.cur}；最新竞品 ${r.comp.toFixed(2)} ${r.cur}，差额 ${(r.comp-r.l1>=0?'+':'')+(r.comp-r.l1).toFixed(2)}。每日 06:00 自动同步。</div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>竞品链接</th><th class="num">价格</th><th>同步时间</th></tr></thead><tbody>${rows||'<tr><td colspan="3" style="text-align:center;color:var(--text-3)">暂无记录</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:640});
+}
+/* 飞书审批流弹窗：完整节点 */
+function openFsFlow(i){
+  const r=M.block[i];
+  // 审核节点按时间线样式展示（完成=绿点、当前=蓝点、待进行=灰点）
+  const tl=r.fs.flow.map((f,idx)=>{
+    const dot=f.s==='done'?'background:var(--success)':f.s==='current'?'background:#fff;border:2px solid var(--primary)':'background:#fff;border:2px solid var(--border)';
+    const stTag=f.s==='done'?tag('success','已完成'):f.s==='current'?tag('info','审批中'):tag('default','待进行');
+    return `<div class="tl-item"><div class="tl-time">${f.t||'—'}</div>
+      <div class="tl-content" style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;flex-shrink:0;${dot};${f.s==='current'?'box-shadow:0 0 0 2px rgba(22,119,255,.2)':''}"></span>
+      <span style="font-weight:500">${idx+1}. ${f.n}</span>${stTag}</div>
+      <div class="tl-user" style="padding-left:18px">处理人：${f.u}</div></div>`;
+  }).join('');
+  openModal(`飞书审批流 · ${r.id}`,`
+    <div class="tip-bar ${r.fs.st==='已同意'?'success':'info'}">最新状态：<b>${r.fs.st}</b>${r.fs.st==='审批中'?'（当前审核人：'+r.fs.by+'）':'（最后操作：'+r.fs.by+'）'}</div>
+    <div class="dsection"><div class="dsection-title">审批节点（时间线）</div><div class="timeline">${tl}</div></div>`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:560});
+}
+/* 处理弹窗：拦截发货 / 继续发货 */
+function handleBlock(i){
+  const r=M.block[i];
+  const body=`
+  <div class="tip-bar info">拦截编号 <b>${r.id}</b> · ${r.plat}/${r.site} · ${r.sku} ${r.name}<br>开品推荐售价 ${r.l1.toFixed(2)} ${r.cur}，最新竞品价格 ${r.comp.toFixed(2)} ${r.cur}（差额 ${(r.comp-r.l1>=0?'+':'')+(r.comp-r.l1).toFixed(2)}）</div>
+  <div class="form-item"><label><span class="req">*</span>处理结果</label>
+    <div class="action-radio">
+      <div class="action-opt sel" onclick="pickAction(this)"><div class="ao-t">拦截发货</div><div class="ao-d">拦截当前节点发货，走飞书审批流确认</div></div>
+      <div class="action-opt" onclick="pickAction(this)"><div class="ao-t">继续发货</div><div class="ao-d">差额在可接受范围，不拦截正常发货</div></div>
+    </div>
+  </div>
+  <div class="form-item"><label>处理人</label><div style="padding-top:6px;font-size:13px">${r.handler} <span class="text-muted" style="font-size:12px">（产品开发，生成单据时带出）</span></div></div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitBlock(${i})">提交</button>`;
+  openModal('处理 · '+r.id,body,footer,{w:560});
+}
+function submitBlock(i){
+  const r=M.block[i];
+  const sel=$$('.action-opt').find(x=>x.classList.contains('sel'));
+  if(!sel)return toast('请选择处理结果','warning');
+  const result=sel.querySelector('.ao-t').textContent.trim();
+  const now=new Date();const pad=n=>String(n).padStart(2,'0');
+  r.st='已处理';r.result=result;
+  r.procT=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  closeModal();toast('已处理：'+result+'，处理时间已回写');render();
+}
+function pageL2Table(){
+  const SK='l2';
+  const rows=M.l2;
+  const ids=rows.map(r=>r.id);
+  S.pageIds[SK]=ids;
+  const allSel=ids.length>0&&ids.every(id=>S.selected[SK]?.[id]);
+  const allExp=ids.length>0&&ids.every(id=>S.expanded[''+id]);
+  let tbody=rows.map(r=>{
+    const sel=S.selected[SK]?.[r.id];
+    const exp=S.expanded[r.id];
+    const isPub=r.auditSt==='已发布';
+    return `<tr class="${sel?'selected':''}">
+      <td style="width:34px"><input type="checkbox" class="ckb" ${sel?'checked':''} onchange="toggleSel('${SK}','${r.id}',this)"></td>
+      <td style="width:28px"><span class="expand-toggle ${exp?'open':''}" onclick="toggleExp('${SK}','${r.id}')">${exp?'▼':'▶'}</span></td>
+      <td><div style="display:flex;gap:8px;align-items:center"><div style="width:36px;height:36px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:20px">${r.img}</div></div></td>
+      <td><div class="cell-stack"><span class="cell-main mono">${r.sku}</span></div></td>
+      <td><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+      <td>${r.cat}</td>
+      <td>${r.name}</td>
+      <td>${r.auditSt==='已发布'&&r.verNo?`<a class="tbl-link" onclick="openVerHistory('${r.plat}','${r.site}','${r.sku}','l2')">${r.verNo}</a>`:'<span class="text-muted">-</span>'}</td>
+      <td class="num"><div class="cell-stack">${r.priceN!==null?`<span class="cell-main tbl-link" onclick="calcL2('${r.id}','N')">${r.priceN.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.rateN}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="num"><div class="cell-stack">${r.priceA!==null?`<span class="cell-main tbl-link" onclick="calcL2('${r.id}','A')">${r.priceA.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.rateA}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="num"><div class="cell-stack">${r.l1Price!==undefined?`<span class="cell-main">${r.l1Price.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.l1Rate}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="center">${auditTag(r.auditSt)}</td>
+      <td class="small text-muted nowrap">${r.calcTime||'-'}</td>
+      <td class="small text-muted nowrap">${r.auditTime||'-'}</td>
+      <td class="nowrap"><div class="row-actions">
+        ${r.auditSt==='待审核'?`<a class="btn-link" ${r.priceN!==null?`onclick="auditPubOne('l2','${r.plat}','${r.site}','${r.sku}')"`:'style="pointer-events:none;color:var(--text-4)"'} title="${r.priceN!==null?'':'费用缺失不可发布'}">审核发布</a><span class="divider"></span>`:''}
+        <a class="btn-link" onclick="openLog('L2价格工作台','${r.sku}')">日志</a>
+      </div></td>
+    </tr>${exp?renderL2Detail(r):''}`;
+  }).join('');
+  return `${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'sku',label:'SKU',ph:'请输入SKU'},
+    {k:'name',label:'产品中文名',ph:'请输入名称'},
+    {k:'audit',label:'价格审核状态',type:'select',opts:[{v:'',t:'全部'},{v:'2',t:'已发布',sel:true},{v:'1',t:'待审核'},{v:'3',t:'已作废'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px">
+    <button class="btn btn-primary" onclick="batchRecalc()">+ 重新计算</button>
+    <button class="btn" onclick="batchAuditPub('l2')">批量审核发布</button>
+    <span style="flex:1"></span>
+    <button class="btn-ghost btn">导出</button>
+  </div>
+  ${batchBar(SK,[{t:'重新计算',onclick:'batchRecalc()'},{t:'批量审核发布',onclick:"batchAuditPub('l2')"},{t:'导出',onclick:'exportRow()'}])}
+  <div class="table-wrap" style="overflow:auto">
+    <table class="tbl" style="min-width:1650px">
+      <thead><tr>
+        <th style="width:34px"><input type="checkbox" class="ckb" ${allSel?'checked':''} onchange="toggleAll('${SK}',this.checked)"></th>
+        <th style="width:70px"><span class="expand-toggle" title="全部展开/收起" style="font-size:12px;color:var(--primary)" onclick="headToggleAll('l2')">${allExp&&ids.length?'收拢':'展开'}</span></th><th>主图</th><th>SKU</th><th>平台/站点</th><th>产品分类</th><th>产品中文名</th>
+        <th>版本号</th>
+        <th class="num">必要售价</th><th class="num">基准售价</th><th class="num">开品推荐价</th>
+        <th class="center">价格审核状态</th>
+        <th>计算完成时间</th><th>审核时间</th><th style="width:150px">操作</th>
+      </tr></thead>
+      <tbody>${tbody||'<tr><td colspan="13"><div class="empty"><div class="ic">📭</div><div class="t">暂无 L2 价格</div></div></td></tr>'}</tbody>
+    </table>
+    ${pagination(rows.length,1,10)}
+  </div>`;
+}
+function toggleExp(k,id){S.expanded[id]=!S.expanded[id];render()}
+/* 表头全部展开/收起（各页展开键前缀映射） */
+const EXP_PREFIX={'l2':'','l3':'l3_','ver':'','ver3':'ver3_'};
+function headToggleAll(SK){
+  const ids=S.pageIds[SK]||[];
+  const p=(SK in EXP_PREFIX)?EXP_PREFIX[SK]:(SK+'_');
+  if(!ids.length)return;
+  const allExp=ids.every(id=>S.expanded[p+id]);
+  ids.forEach(id=>{S.expanded[p+id]=!allExp});
+  render();
+}
+function renderL2Detail(r){
+  const f=r.fee;
+  const has=x=>(x!==null&&x!==undefined&&x!=='');
+  const money=x=>has(x)?x.toFixed(2)+' <span class="cur">CNY</span>':'<span class="empty">-</span>';
+  const txt=x=>has(x)?`<span>${x}</span>`:'<span class="empty">-</span>';
+  const pct=x=>has(x)?x.toFixed(2)+'<span class="cur">%</span>':'<span class="empty">-</span>';
+  const verNo=(M.ver.find(x=>x.sku===r.sku&&x.plat===r.plat&&x.site===r.site&&x.auditSt==='已发布')||{}).vid||r.id;
+  return `<tr class="expanded-row"><td colspan="16"><div class="sub-detail">
+    <div class="sub-detail-title">费用明细（价格执行编号 ${verNo}）</div>
+    <div class="fee-sub"><table>
+      <thead>
+        <tr class="cat-row"><th class="left">头程运费</th><th>尾程运费</th><th colspan="5">仓储相关费</th><th>商品成本</th><th></th><th colspan="4">平台佣金</th></tr>
+        <tr>
+        <th>头程运费</th>
+        <th>尾程运费</th>
+        <th>QA人力成本</th><th>外验费用</th><th>国内仓仓储费及杂费</th><th>仓储人力成本</th><th>海外仓入库费</th>
+        <th>采购成本</th>
+        <th>汇率/CNY</th>
+        <th>佣金</th><th>退款率</th><th>税率</th><th>广告费比例</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+        <td class="cny">${money(f.ff)}</td>
+        <td class="cny">${money(f.lf)}</td>
+        <td class="cny">${money(f.qa)}</td><td class="cny">${money(f.ex)}</td><td class="cny">${money(f.dc)}</td><td class="cny">${money(f.wlabor)}</td><td class="cny">${money(f.oc)}</td>
+        <td class="cny">${money(f.cost)}</td>
+        <td class="rate">${has(f.rate)?f.rate.toFixed(4):'<span class="empty">-</span>'}</td>
+        <td class="pct">${pct(f.comm)}</td><td class="pct">${pct(f.refund)}</td><td class="pct">${pct(f.tax)}</td><td class="pct">${pct(f.ad)}</td>
+      </tr></tbody>
+    </table></div>
+  </div></td></tr>`;
+}
+function openListing(id){
+  const r=M.l2.find(x=>x.id===id);
+  const rows=r.listings.map(l=>`<tr><td class="mono">${l.id}</td><td>${l.t}</td><td class="num">${l.price.toFixed(2)}</td><td class="center">${l.cur}</td><td class="num">${l.stock}</td><td class="center">${l.st==='在线'?tag('success','在线'):tag('default','下架')}</td><td class="small text-muted">${l.ut}</td></tr>`).join('');
+  const footer=`<button class="btn" onclick="closeModal()">关闭</button><button class="btn btn-primary" onclick="closeModal();toast('已导出 Listing 详情')">导出</button>`;
+  openModal(`Listing 详情 · ${r.sku} (${r.plat}/${r.site})`,`<div class="tip-bar info">共 ${r.listings.length} 条在线 Listing</div><div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>Listing ID</th><th>标题</th><th class="num">在线售价</th><th class="center">币种</th><th class="num">库存</th><th class="center">状态</th><th>更新时间</th></tr></thead><tbody>${rows}</tbody></table></div>`,footer,{w:880});
+}
+function openDeviation(id){
+  const r=M.l2.find(x=>x.id===id);
+  const rows=r.feeList.map(f=>{
+    const diff=(f.act-f.est).toFixed(2);const pct=f.est?((f.act-f.est)/f.est*100).toFixed(1):0;
+    const over=Math.abs(pct)>5;
+    return `<tr ${over?'style="background:var(--danger-bg)"':''}><td><div class="cell-stack"><span class="cell-main">${f.n}</span><span class="cell-sub mono">${f.c}</span></div></td><td class="num">${f.est.toFixed(2)}</td><td class="num">${f.act.toFixed(2)}</td><td class="num ${diff>=0?'':'deviation down'}">${diff>=0?'+':''}${diff}</td><td class="num">${over?tag('danger',pct+'%'):tag('default',pct+'%')}</td></tr>`;
+  }).join('');
+  const totEst=r.feeList.reduce((s,f)=>s+f.est,0),totAct=r.feeList.reduce((s,f)=>s+f.act,0);
+  const totDiff=(totAct-totEst).toFixed(2),totPct=(totDiff/totEst*100).toFixed(1);
+  openDrawer(`订单费用对比 · ${r.sku}`,`
+    <div class="tip-bar ${Math.abs(totPct)>5?'danger':'info'}">预估总额 ¥${totEst.toFixed(2)} → 实际总额 ¥${totAct.toFixed(2)}，偏差 ${totDiff>=0?'+':''}${totDiff}（${totPct}%）${Math.abs(totPct)>5?'，超出 5% 阈值':''}</div>
+    <div class="dsection">
+      <div class="dsection-title">费用项明细（偏差 > 5% 标红）</div>
+      <div class="table-wrap" style="box-shadow:none"><table class="tbl"><thead><tr><th>费用项（标准C编码）</th><th class="num">预估（定价口径）</th><th class="num">实际（订单口径）</th><th class="num">偏差额</th><th class="num">偏差%</th></tr></thead><tbody>${rows}<tr style="background:var(--th-bg);font-weight:600"><td>合计</td><td class="num">${totEst.toFixed(2)}</td><td class="num">${totAct.toFixed(2)}</td><td class="num">${totDiff>=0?'+':''}${totDiff}</td><td class="num">${totPct}%</td></tr></tbody></table></div>
+    </div>
+    <div class="small text-muted">数据来源：4.1 订单费用映射。预估口径来自 L2 价格计算，实际口径来自订单利润报表。</div>
+  `);
+}
+function recalc(id){
+  const r=M.l2.find(x=>x.id===id);
+  confirmBox('确认重新计算？',`将基于当前数据为 <b>${r.sku}</b>（${r.plat}/${r.site}）生成新的待执行版本。<br><br>注：重新计算会<b>生成新版本</b>，需到「刊登销售价版本管理」手动审核发布后才可在工作台可见。`,()=>toast(`已生成新版本，请到 刊登销售价版本管理审核发布`),{okTxt:'确认计算'});
+}
+function batchRecalc(){const cnt=Object.keys(S.l2Sel()||{}).length;if(!cnt)return toast('请先选择要重新计算的项','warning');confirmBox('批量重新计算？',`将批量生成 <b>${cnt}</b> 个 SKU 的新版本，需逐一审核发布。`,()=>{toast(`已批量生成 ${cnt} 个新版本`);S.selected={};render()})}
+function exportRow(){toast('已开始导出，请稍后')}
+/* 批量审核发布：L2/L3 工作台通用（选中项中待审核的批量发布） */
+function batchAuditPub(SK){
+  const data=SK==='l3'?M.l3:M.l2;
+  const selIds=Object.keys(S.selected[SK]||{}).filter(k=>S.selected[SK][k]);
+  const pend=selIds.filter(id=>{const r=data.find(x=>x.id===id);return r&&r.auditSt==='待审核'});
+  if(!pend.length)return toast('请先选择待审核的项','warning');
+  const ok=pend.filter(id=>{const r=data.find(x=>x.id===id);return r.priceN!==null||r.price!==null});
+  if(!ok.length)return toast('所选待审核项费用缺失，不可发布','warning');
+  const first=ok.map(id=>data.find(x=>x.id===id)).find(Boolean);
+  const nv=first?nextVerNo(first.plat,first.site,first.sku,SK==='l3'?'l3':'l2'):'V1.1.1';
+  confirmBox('是否发布此价格版本',`所选 <b>${ok.length}</b> 个待审核价格将发布，发布后旧版本价格审核状态改为：<b>已作废</b>，新版本号为：<b>${nv}</b>。${pend.length>ok.length?'（'+(pend.length-ok.length)+' 个费用缺失已跳过）':''}`,()=>{
+    const now=new Date();const pad=n=>String(n).padStart(2,'0');
+    const t=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+    ok.forEach(id=>{const r=data.find(x=>x.id===id);r.auditSt='已发布';r.auditTime=t});
+    toast(`已批量发布 ${ok.length} 个版本`);
+    S.selected={};render();
+  });
+}
+S.l2Sel=()=>S.selected.l2;
+
+/* 异常处置 */
+function openAbnormal(id){
+  const r=M.l2.find(x=>x.id===id);
+  const body=`
+  <div class="tip-bar danger">⚠️ 以下处置动作将留痕记录，请谨慎操作。「标记清库」为<b>不可逆</b>操作。</div>
+  <div class="form-item" style="margin-bottom:14px"><label>选择处置动作</label>
+    <div class="action-radio">
+      <div class="action-opt sel" onclick="pickAction(this)"><div class="ao-t">重新核定</div><div class="ao-d">重新取值/重新计算利润率，生成新版本</div></div>
+      <div class="action-opt" onclick="pickAction(this)"><div class="ao-t">标记清库 <span class="tag danger">不可逆</span></div><div class="ao-d">转入 L3 清库工作台，用清库利润率定价</div></div>
+      <div class="action-opt" onclick="pickAction(this)"><div class="ao-t">人工覆盖</div><div class="ao-d">运营手动填值/确认成本项</div></div>
+    </div>
+  </div>
+  <div class="form-item"><label><span class="req">*</span>处置原因</label><textarea class="input" rows="3" placeholder="请填写处置原因，必填"></textarea><div class="hint">处置记录将写入操作日志</div></div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitAbnormal('${id}')">提交</button>`;
+  openModal(`异常处置 · ${r.sku}`,body,footer,{w:640});
+}
+function pickAction(o){$$('.action-opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel')}
+function submitAbnormal(id){closeModal();toast('处置已提交并留痕')}
+
+/* ============================================================
+   页面：L3 价格工作台
+   ============================================================ */
+/* L3 数据（清库规则确认后补充演示数据） */
+M.l3=[
+  {id:'L3-001',verNo:'V1.1.2',img:'🎧',sku:'99999999',plat:'eBay',site:'US',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',price:17.48,rate:5,cur:'USD',auditSt:'已发布',calcTime:'2026-08-10 14:20',auditTime:'2026-08-10 15:00',
+    fee:{fc:'美森快船',ff:18.50,lc:'USPS',lf:4.20,qa:1.80,ex:0.60,dc:1.20,wlabor:1.10,oc:0.40,cost:85.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:8}},
+  {id:'L3-002',verNo:'V1.1.1',img:'🎒',sku:'33093309',plat:'eBay',site:'US',cat:'箱包/双肩包',name:'商务双肩电脑包',price:18.85,rate:3,cur:'USD',auditSt:'已发布',calcTime:'2026-08-09 10:30',auditTime:'2026-08-09 11:20',
+    fee:{fc:'海运普船',ff:8.50,lc:'USPS',lf:5.20,qa:0.80,ex:0.40,dc:1.50,wlabor:0.90,oc:0.60,cost:95.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}},
+  {id:'L3-003',verNo:'V1.1.1',img:'🔦',sku:'77337733',plat:'eBay',site:'DE',cat:'户外/照明',name:'强光手电筒 USB',price:3.28,rate:4,cur:'EUR',auditSt:'已发布',calcTime:'2026-08-08 16:40',auditTime:'2026-08-09 09:10',
+    fee:{fc:'云途',ff:5.20,lc:'DHL',lf:2.80,qa:0.40,ex:0.20,dc:0.50,wlabor:0.30,oc:0.15,cost:16.00,ccur:'CNY',rate:7.85,comm:13,refund:3,tax:0,ad:5}},
+  {id:'L322082208260810001',img:'⌚',sku:'22082208',plat:'eBay',site:'UK',cat:'3C数码/穿戴',name:'智能手表运动版',price:18.97,rate:6,cur:'GBP',auditSt:'待审核',calcTime:'2026-08-10 09:35',auditTime:'',
+    fee:{fc:'中欧班列',ff:24.00,lc:'Royal Mail',lf:5.80,qa:2.20,ex:0.80,dc:1.50,wlabor:1.10,oc:0.50,cost:120.00,ccur:'CNY',rate:9.15,comm:13,refund:2,tax:0,ad:9}},
+  {id:'L322102210260810002',img:'🔌',sku:'22102210',plat:'eBay',site:'US',cat:'3C数码/线材',name:'USB-C 数据线 1m',price:null,rate:5,cur:'USD',auditSt:'待审核',calcTime:'2026-08-10 13:25',auditTime:'',
+    fee:{fc:'云途',ff:2.10,lc:'',lf:null,qa:0.20,ex:0.10,dc:0.25,wlabor:0.15,oc:0.08,cost:8.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}}
+];
+/* L3 价格版本管理数据（refId 关联 M.l3 用于计算过程弹窗） */
+M.ver3=[
+  {vid:'L399999999260810001',refId:'L3-001',verNo:'V1.1.2',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],posts:['10024'],sku:'99999999',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-10 15:00',auditBy:'张无忌',genTime:'2026-08-10 14:00',doneTime:'2026-08-10 14:20',price:17.48,cur:'USD',
+    fee:{fc:'美森快船',ff:18.50,lc:'USPS',lf:4.20,qa:1.80,ex:0.60,dc:1.20,wlabor:1.10,oc:0.40,cost:85.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:8}},
+  {vid:'L333093309260809001',refId:'L3-002',verNo:'V1.1.1',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],posts:['10024'],sku:'33093309',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-09 11:20',auditBy:'张无忌',genTime:'2026-08-09 10:00',doneTime:'2026-08-09 10:30',price:18.85,cur:'USD',
+    fee:{fc:'海运普船',ff:8.50,lc:'USPS',lf:5.20,qa:0.80,ex:0.40,dc:1.50,wlabor:0.90,oc:0.60,cost:95.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}},
+  {vid:'L377337733260808001',refId:'L3-003',verNo:'V1.1.1',plat:'eBay',site:'DE',country:'德国',wh:['德仓'],posts:['10115'],sku:'77337733',execSt:'执行完成',execTag:[],auditSt:'已发布',auditTime:'2026-08-09 09:10',auditBy:'赵敏',genTime:'2026-08-08 16:00',doneTime:'2026-08-08 16:40',price:3.28,cur:'EUR',
+    fee:{fc:'云途',ff:5.20,lc:'DHL',lf:2.80,qa:0.40,ex:0.20,dc:0.50,wlabor:0.30,oc:0.15,cost:16.00,ccur:'CNY',rate:7.85,comm:13,refund:3,tax:0,ad:5}},
+  {vid:'L322082208260810001',refId:'L322082208260810001',plat:'eBay',site:'UK',country:'英国',wh:['英仓'],posts:['SW1A'],sku:'22082208',execSt:'执行完成',execTag:[],auditSt:'待审核',auditTime:'',auditBy:'',genTime:'2026-08-10 09:00',doneTime:'2026-08-10 09:35',price:18.97,cur:'GBP',
+    fee:{fc:'中欧班列',ff:24.00,lc:'Royal Mail',lf:5.80,qa:2.20,ex:0.80,dc:1.50,wlabor:1.10,oc:0.50,cost:120.00,ccur:'CNY',rate:9.15,comm:13,refund:2,tax:0,ad:9}},
+  {vid:'L322102210260810002',refId:'L322102210260810002',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],posts:['10024'],sku:'22102210',execSt:'执行异常',execTag:['尾程运费缺失','基础数据缺失'],auditSt:'待审核',auditTime:'',auditBy:'',genTime:'2026-08-10 13:20',doneTime:'2026-08-10 13:25',price:null,cur:'USD',
+    fee:{fc:'云途',ff:2.10,lc:'',lf:null,qa:0.20,ex:0.10,dc:0.25,wlabor:0.15,oc:0.08,cost:8.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:6}},
+  {vid:'L399999999260801001',refId:'L3-001',verNo:'V1.1.1',plat:'eBay',site:'US',country:'美国',wh:['美西仓'],posts:['10024'],sku:'99999999',execSt:'执行完成',execTag:[],auditSt:'已作废',auditTime:'2026-08-02 10:00',auditBy:'宋远桥',genTime:'2026-08-01 09:00',doneTime:'2026-08-01 09:30',price:18.20,cur:'USD',
+    fee:{fc:'美森快船',ff:18.50,lc:'USPS',lf:4.20,qa:1.80,ex:0.60,dc:1.20,wlabor:1.10,oc:0.40,cost:85.00,ccur:'CNY',rate:7.10,comm:13,refund:3,tax:0,ad:8}}
+];
+function pageL3(){
+  const SK='l3';
+  const rows=M.l3;
+  const ids=rows.map(r=>r.id);
+  S.pageIds[SK]=ids;
+  const allSel=ids.length>0&&ids.every(id=>S.selected[SK]?.[id]);
+  const allExp=ids.length>0&&ids.every(id=>S.expanded['l3_'+id]);
+  let tbody=rows.map(r=>{
+    const sel=S.selected[SK]?.[r.id];
+    const exp=S.expanded['l3_'+r.id];
+    const isPub=r.auditSt==='已发布';
+    return `<tr class="${sel?'selected':''}">
+      <td style="width:34px"><input type="checkbox" class="ckb" ${sel?'checked':''} onchange="toggleSel('${SK}','${r.id}',this)"></td>
+      <td style="width:28px"><span class="expand-toggle ${exp?'open':''}" onclick="toggleExpL3('${r.id}')">${exp?'▼':'▶'}</span></td>
+      <td><div style="display:flex;gap:8px;align-items:center"><div style="width:36px;height:36px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:20px">${r.img}</div></div></td>
+      <td><div class="cell-stack"><span class="cell-main mono">${r.sku}</span></div></td>
+      <td><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+      <td>${r.cat}</td>
+      <td>${r.name}</td>
+      <td>${r.auditSt==='已发布'&&r.verNo?`<a class="tbl-link" onclick="openVerHistory('${r.plat}','${r.site}','${r.sku}','l3')">${r.verNo}</a>`:'<span class="text-muted">-</span>'}</td>
+      <td class="num"><div class="cell-stack">${r.price!==null?`<span class="cell-main tbl-link" onclick="calcL3('${r.id}')">${r.price.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub tbl-link" onclick="openStockSnapshot('${r.sku}')">库存快照</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="center">${auditTag(r.auditSt)}</td>
+      <td class="small text-muted nowrap">${r.calcTime}</td>
+      <td class="small text-muted nowrap">${r.auditTime||'-'}</td>
+      <td class="nowrap"><div class="row-actions">
+        ${!isPub?`<a class="btn-link" ${r.price!==null?`onclick="auditPubOne('l3','${r.plat}','${r.site}','${r.sku}')"`:'style="pointer-events:none;color:var(--text-4)"'} title="${r.price!==null?'':'费用缺失不可发布'}">审核发布</a><span class="divider"></span>`:''}
+        <a class="btn-link" onclick="openLog('L3价格工作台','${r.sku}')">日志</a>
+      </div></td>
+    </tr>${exp?renderL3Detail(r).replace('colspan="12"','colspan="12"'):''}`;
+  }).join('');
+  return `${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'sku',label:'SKU',ph:'请输入SKU'},
+    {k:'name',label:'产品中文名',ph:'请输入名称'},
+    {k:'audit',label:'价格审核状态',type:'select',opts:[{v:'',t:'全部'},{v:'2',t:'已发布',sel:true},{v:'1',t:'待审核'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px">
+    <button class="btn btn-primary" onclick="toast('请选择清库SKU')">+ 重新计算</button>
+    <button class="btn" onclick="batchAuditPub('l3')">批量审核发布</button>
+    <span style="flex:1"></span>
+    <button class="btn-ghost btn">导出</button>
+  </div>
+  ${batchBar(SK,[{t:'重新计算',onclick:'toast(\'请选择清库SKU\')'},{t:'批量审核发布',onclick:"batchAuditPub('l3')"},{t:'导出',onclick:'exportRow()'}])}
+  <div class="table-wrap" style="overflow:auto">
+    <table class="tbl" style="min-width:1400px">
+      <thead><tr>
+        <th style="width:34px"><input type="checkbox" class="ckb" ${allSel?'checked':''} onchange="toggleAll('${SK}',this.checked)"></th>
+        <th style="width:70px"><span class="expand-toggle" title="全部展开/收起" style="font-size:12px;color:var(--primary)" onclick="headToggleAll('l3')">${allExp&&ids.length?'收拢':'展开'}</span></th><th>主图</th><th>SKU</th><th>平台/站点</th><th>产品分类</th><th>产品中文名</th>
+        <th>版本号</th>
+        <th class="num">清库价</th>
+        <th class="center">价格审核状态</th>
+        <th>计算完成时间</th><th>审核时间</th><th style="width:180px">操作</th>
+      </tr></thead>
+      <tbody>${tbody||'<tr><td colspan="12"><div class="empty"><div class="ic">📭</div><div class="t">暂无清库价格</div><div class="d">清库规则确认后补充数据</div></div></td></tr>'}</tbody>
+    </table>
+    ${pagination(rows.length,1,10)}
+  </div>`;
+}
+function toggleExpL3(id){S.expanded['l3_'+id]=!S.expanded['l3_'+id];render()}
+function renderL3Detail(r){
+  const f=r.fee||{};
+  const has=x=>(x!==null&&x!==undefined&&x!=='');
+  const money=x=>has(x)?x.toFixed(2)+' <span class="cur">CNY</span>':'<span class="empty">-</span>';
+  const txt=x=>has(x)?`<span>${x}</span>`:'<span class="empty">-</span>';
+  const pct=x=>has(x)?x.toFixed(2)+'<span class="cur">%</span>':'<span class="empty">-</span>';
+  const v3=M.ver3.find(x=>x.refId===(r.vid||r.id));
+  const verNo=v3?v3.vid:(r.vid||r.id);
+  return `<tr class="expanded-row"><td colspan="13"><div class="sub-detail">
+    ${r.noTitle?'':`<div class="sub-detail-title">费用明细（价格执行编号 ${verNo}）</div>`}
+    <div class="fee-sub"><table>
+      <thead><tr>
+        <th>尾程运费</th>
+        <th>QA人力成本</th><th>外验费用</th><th>国内仓仓储费及杂费</th><th>仓储人力成本</th><th>海外仓入库费</th>
+        <th>回收本金</th>
+        <th>汇率/CNY</th>
+        <th>佣金</th><th>退款率</th><th>税率</th><th>广告费比例</th>
+      </tr></thead>
+      <tbody><tr>
+        <td class="cny">${money(f.lf)}</td>
+        <td class="cny">${money(f.qa)}</td><td class="cny">${money(f.ex)}</td><td class="cny">${money(f.dc)}</td><td class="cny">${money(f.wlabor)}</td><td class="cny">${money(f.oc)}</td>
+        <td class="cny">${money(f.cost)}</td>
+        <td class="rate">${has(f.rate)?f.rate.toFixed(4):'<span class="empty">-</span>'}</td>
+        <td class="pct">${pct(f.comm)}</td><td class="pct">${pct(f.refund)}</td><td class="pct">${pct(f.tax)}</td><td class="pct">${pct(f.ad)}</td>
+      </tr></tbody>
+    </table></div>
+  </div></td></tr>`;
+}
+/* ============================================================
+   页面：SKU 范围列表
+   ============================================================ */
+function pageSku(){
+  const SK='sku';
+  const rows=M.sku;
+  const ids=rows.map(r=>r.sku);
+  S.pageIds[SK]=ids;
+  const allSel=ids.length>0&&ids.every(id=>S.selected[SK]?.[id]);
+  let tbody=rows.map((r,i)=>{
+    const sel=S.selected[SK]?.[r.sku];
+    return `<tr class="${sel?'selected':''}">
+      <td style="width:34px"><input type="checkbox" class="ckb" ${sel?'checked':''} onchange="toggleSel('${SK}','${r.sku}',this)"></td>
+      <td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td>
+      <td class="mono">${r.sku}</td><td>${r.cat}</td><td>${r.name}</td><td>${tag(r.saleSt==='在售'?'success':'default',r.saleSt)}</td>
+      <td class="num">${r.weight?r.weight+' <span class="text-muted">g</span>':'<span class="text-muted">-</span>'}</td><td class="small">${r.size?r.size+' <span class="text-muted">cm</span>':'<span class="text-muted">-</span>'}</td>      <td>${r.stockDetail.length?r.stockDetail.map(sd=>`<span class="tbl-link" onclick="openCountryFL(${i})">${tag(sd.fl&&sd.fl.length?'success':'cyan',sd.c)}</span>`).join(' '):tag('default','无')}</td>
+      <td>${r.comboType&&r.comboType!=='单品'?`<span class="tbl-link" onclick="openSubSku(${i})">${tag('purple',r.comboType)}</span>`:''}</td>
+      <td class="center">${[!r.weight&&'产品毛重缺失',!r.size&&'包装尺寸缺失'].filter(Boolean).map(t=>tag('danger',t)).join(' ')||'<span class="text-muted">-</span>'}</td>
+      <td class="small text-muted nowrap">${r.firstSync||'-'}</td><td class="small text-muted nowrap">${r.lastSync||'-'}</td>
+      <td class="center">${rangeTag(r.rangeSt)}</td>
+      <td class="nowrap"><a class="btn-link" onclick="openLog('SKU范围','${r.sku}')">日志</a></td>
+    </tr>`;
+  }).join('');
+  return `${queryBarRender([
+    {k:'sku',label:'SKU',ph:''},
+    {k:'st',label:'销售状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'在售'},{v:'2',t:'停售'}]},
+    {k:'fc',label:'是否发头程',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'已发'},{v:'2',t:'未发'}]},
+    {k:'cat',label:'产品分类',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'3C数码'},{v:'2',t:'户外'},{v:'3',t:'箱包'}]},
+    {k:'combo',label:'组合类型',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'单品'},{v:'2',t:'拆包组合'},{v:'3',t:'开发组合'}]},
+    {k:'fst',label:'首次同步时间',ph:'开始~结束'},
+    {k:'lst',label:'最新同步时间',ph:'开始~结束'},
+    {k:'rst',label:'范围状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'启用'},{v:'2',t:'禁用'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px">
+    <button class="btn btn-primary" onclick="manualSync()">手动同步</button>
+    <span style="flex:1"></span><button class="btn-ghost btn">导出</button>
+  </div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:1650px"><thead><tr>
+    <th style="width:34px"><input type="checkbox" class="ckb" ${allSel?'checked':''} onchange="toggleAll('${SK}',this.checked)"></th>
+    <th>主图</th><th>SKU</th><th>产品分类</th><th>产品中文名</th><th>销售状态</th><th class="num">产品毛重</th><th>包装尺寸</th><th>备货国家</th><th>组合类型</th><th class="center">异常标签</th><th>首次同步时间</th><th>最新同步时间</th><th class="center">范围状态</th><th style="width:80px">操作</th>
+  </tr></thead><tbody>${tbody}</tbody></table>${pagination(rows.length,1,10)}</div>`;
+}
+/* 备货国家 → 首次头程信息弹窗 */
+function openCountryFL(i){
+  const r=M.sku[i];
+  const recs=(r.stockDetail||[]).filter(x=>x.fl&&x.fl.length).flatMap(x=>x.fl.map(f=>({c:x.c,...f})));
+  const rows=recs.map(f=>`<tr><td>${tag('cyan',f.c)}</td><td class="mono small">${f.no}</td><td>${f.st==='已收货'?tag('success','已收货'):f.st==='在途'?tag('warning','在途'):tag('default',f.st)}</td><td>${f.destWh}</td><td class="num">${f.qty}</td><td class="small text-muted nowrap">${f.shipT}</td><td class="small text-muted nowrap">${f.eta}</td></tr>`).join('');
+  openModal(`首次头程信息 · ${r.sku}`,
+    `<div class="tip-bar info">SKU <b>${r.sku}</b> ${r.name} 的全部首次头程发货记录，共 <b>${recs.length}</b> 条。</div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>备货国家</th><th>备货单号</th><th class="center">状态</th><th>目的仓</th><th class="num">发货数量</th><th>发货时间</th><th>预计到货时间</th></tr></thead><tbody>${rows||'<tr><td colspan="7" style="text-align:center;color:var(--text-3)">该国家暂无首次头程记录</td></tr>'}</tbody></table></div>`,
+    `<button class="btn" onclick="closeModal()">关闭</button>`,{w:880});
+}
+/* 子SKU信息弹窗（组合品） */
+function openSubSku(i){
+  const r=M.sku[i];
+  const subs=r.subs||[];
+  const rows=subs.map(s=>`<tr><td class="mono">${s.sku}</td><td>${s.name}</td><td class="num">${s.qty}</td></tr>`).join('');
+  openModal('子SKU信息',
+    `<div class="tip-bar info">共 <b>${subs.length}</b> 个子SKU。</div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>子SKU</th><th>子SKU产品中文名</th><th class="num">成量</th></tr></thead><tbody>${rows}</tbody></table></div>`,
+    `<button class="btn" onclick="closeModal()">关闭</button>`,{w:520});
+}
+/* 头程单据详情抽屉 */
+function manualSync(){
+  const body=`<div class="form-item" style="margin-bottom:14px"><label>同步范围</label>
+    <div class="action-radio">
+      <div class="action-opt sel" onclick="pickAction(this)"><div class="ao-t">指定 SKU</div><div class="ao-d">手动选择需要更新数据的 SKU</div></div>
+      <div class="action-opt" onclick="pickAction(this)"><div class="ao-t">按范围配置全量</div><div class="ao-d">按 SKU 范围配置重新判定全部成员资格</div></div>
+    </div></div>
+    <div class="form-item"><label>指定 SKU</label><input class="input" placeholder="输入SKU，多个用逗号分隔"></div>
+    <div class="tip-bar info">同步规则：头程未发的 SKU 不进入范围池；范围状态按 SKU 范围配置判定（满足=启用，不满足=禁用）。</div>`;
+  confirmBox('手动同步',body,()=>toast('同步任务已启动，预计1-3分钟完成'),{okTxt:'开始同步'});
+}
+
+/* 通用日志抽屉 */
+function openLog(src,id){
+  const tagMap={info:'info',warning:'warning',default:'default',success:'success',danger:'danger'};
+  const rows=[
+    {user:'张无忌',time:'2026-08-08 14:00',content:'定期同步执行，范围状态判定为启用',type:'定期同步',tc:'info'},
+    {user:'宋远桥',time:'2026-08-01 10:00',content:'范围配置变更：新增分类「户外」',type:'范围配置变更',tc:'warning'},
+    {user:'张无忌',time:'2026-07-15 10:00',content:'首次同步：SKU 进入范围池',type:'手动同步',tc:'default'},
+    {user:'张无忌',time:'2026-08-08 16:10',content:'版本审核发布，记录审核发布时间与审核人',type:'审核发布',tc:'success'},
+    {user:'宋远桥',time:'2026-08-07 10:00',content:'版本作废，审核状态改为已作废',type:'作废',tc:'danger'},
+    {user:'张无忌',time:'2026-08-08 14:32',content:'重新执行版本，价格执行编号不变',type:'重新执行',tc:'info'}
+  ];
+  const trs=rows.map(r=>`<tr><td>${r.user}</td><td class="small">${r.time}</td><td>${r.content}</td><td>${tag(tagMap[r.tc]||'default',r.type)}</td></tr>`).join('');
+  openDrawer(`${src} · 操作日志`+ (id?` · ${id}`:''),`
+    <div class="log-query">
+      <div class="lq-grid">
+        <div class="lq-item"><label>操作人</label><input class="input" placeholder="请输入"></div>
+        <div class="lq-item"><label>操作时间</label><input class="input" placeholder="开始 ~ 结束"></div>
+        <div class="lq-item"><label>操作内容</label><input class="input" placeholder="模糊检索"></div>
+        <div class="lq-item"><label>操作类型</label><select class="select"><option value="">全部</option><option>定期同步</option><option>手动同步</option><option>范围配置变更</option><option>审核发布</option><option>重新执行</option><option>作废</option></select></div>
+      </div>
+      <div class="lq-actions"><button class="btn btn-primary" onclick="toast('已按条件查询','info')">查询</button><button class="btn" onclick="toast('已重置','info')">重置</button></div>
+    </div>
+    <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>操作人</th><th>操作时间</th><th>操作内容</th><th>操作类型</th></tr></thead><tbody>${trs}</tbody></table></div>
+    ${pagination(rows.length,1,10)}
+  `);
+}
+
+/* ============================================================
+   页面：L2 价格版本管理
+   ============================================================ */
+function pageVer(){
+  const tab=S.activeTab.ver;
+  // 最新版本：每个 sku 站点 取执行编号最大；历史：其余
+  const latest={},hist=[];
+  M.ver.forEach(v=>{const k=v.sku+v.site;if(!latest[k]||latest[k].vid<v.vid){if(latest[k])hist.push(latest[k]);latest[k]=v}else{hist.push(v)}});
+  const latestArr=Object.values(latest);
+  const data=tab==='latest'?latestArr:M.ver;
+  const SK='ver';
+  const ids=data.map(r=>r.vid);
+  S.pageIds[SK]=ids;
+  const allSel=ids.length>0&&ids.every(id=>S.selected[SK]?.[id]);
+  const allExp=ids.length>0&&ids.every(id=>S.expanded[''+id]);
+  let tbody=data.map(r=>{
+    const sel=S.selected[SK]?.[r.vid];
+    const exp=S.expanded[r.vid];
+    return `<tr class="${sel?'selected':''}">
+      <td style="width:34px"><input type="checkbox" class="ckb" ${sel?'checked':''} onchange="toggleSel('${SK}','${r.vid}',this)"></td>
+      <td style="width:28px"><span class="expand-toggle ${exp?'open':''}" onclick="toggleExp('ver','${r.vid}')">${exp?'▼':'▶'}</span></td>
+      <td class="mono small">${r.vid}</td>
+      <td class="nowrap"><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+      <td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td>
+      <td class="mono">${r.sku}</td>
+      <td>${r.auditSt==='已发布'&&r.verNo?`<a class="tbl-link" onclick="openVerHistory('${r.plat}','${r.site}','${r.sku}','l2')">${r.verNo}</a>`:'<span class="text-muted">-</span>'}</td>
+      <td class="num nowrap"><div class="cell-stack">${r.priceN!==null?`<span class="cell-main tbl-link" onclick="openCalc('${r.vid}','N')">${r.priceN.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.rateN}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="num nowrap"><div class="cell-stack">${r.priceA!==null?`<span class="cell-main tbl-link" onclick="openCalc('${r.vid}','A')">${r.priceA.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.rateA}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="num nowrap"><div class="cell-stack">${r.l1!=null?`<span class="cell-main">${r.l1.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub">毛利率 ${r.l1Rate}%</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="center">${execTag(r.execSt)}</td>
+      <td class="center">${auditTag(r.auditSt)}</td>
+      <td class="center">${renderExecTags(r.execTag)}</td>
+      <td class="small text-muted nowrap">${r.genTime}</td>
+      <td class="small text-muted nowrap">${r.doneTime||'-'}</td>
+      <td class="small text-muted nowrap">${r.auditTime||'-'}</td>
+      <td class="small">${r.auditBy||'-'}</td>
+      <td class="nowrap"><a class="btn-link" onclick="openLog('版本管理','${r.vid}')">日志</a></td>
+    </tr>${exp?renderVerDetail(r):''}`;
+  }).join('');
+  return `<div class="tabs">
+    <div class="tab ${tab==='latest'?'active':''}" onclick="switchVerTab('latest')">最新版本 <span class="count">${latestArr.length}</span></div>
+    <div class="tab ${tab==='history'?'active':''}" onclick="switchVerTab('history')">历史版本 <span class="count">${M.ver.length-latestArr.length}</span></div>
+  </div>
+  ${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'sku',label:'SKU',ph:''},{k:'name',label:'产品中文名',ph:''},
+    {k:'exec',label:'执行状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待执行'},{v:'2',t:'执行完成'},{v:'3',t:'执行异常'}]},
+    {k:'audit',label:'价格审核状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待审核'},{v:'2',t:'已发布'},{v:'3',t:'已作废'}]},
+    {k:'gen',label:'生成时间',ph:''},{k:'done',label:'执行完成时间',ph:''},
+    {k:'at',label:'审核发布时间',ph:''},{k:'aby',label:'审核人',ph:''},{k:'country',label:'备货国家',ph:''},
+    {k:'tag',label:'异常标签',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'毛利率缺失'},{v:'2',t:'头程缺失'},{v:'3',t:'采购成本缺失'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px">
+    <button class="btn" onclick="reExecBatch()">重新执行</button>
+    <span style="flex:1"></span><button class="btn-ghost btn">导出</button>
+  </div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:1500px"><thead><tr>
+    <th style="width:34px"><input type="checkbox" class="ckb" ${allSel?'checked':''} onchange="toggleAll('${SK}',this.checked)"></th>
+    <th style="width:70px"><span class="expand-toggle" title="全部展开/收起" style="font-size:12px;color:var(--primary)" onclick="headToggleAll('ver')">${allExp&&ids.length?'收拢':'展开'}</span></th>
+    <th>价格执行编号</th><th style="min-width:116px">平台/站点</th><th style="width:48px">主图</th><th>SKU</th><th>版本号</th><th class="num" style="min-width:108px">必要售价</th><th class="num" style="min-width:108px">基准售价</th><th class="num" style="min-width:108px">开品推荐价</th><th class="center">执行状态</th><th class="center">价格审核状态</th><th class="center">异常标签</th>
+    <th>生成时间</th><th>执行完成时间</th><th>审核发布时间</th><th>审核人</th><th style="width:80px">操作</th>
+  </tr></thead><tbody>${tbody}</tbody></table>${pagination(data.length,1,10)}</div>`;
+}
+function switchVerTab(t){S.activeTab.ver=t;render()}
+/* L3 价格版本管理（样式复用 L2 版本管理，L3 口径） */
+function pageVer3(){
+  const tab=S.activeTab.ver3||'latest';
+  const latest={};
+  M.ver3.forEach(v=>{const k=v.sku+v.site;if(!latest[k]||latest[k].vid<v.vid){latest[k]=v}});
+  const latestArr=Object.values(latest);
+  const data=tab==='latest'?latestArr:M.ver3;
+  const SK='ver3';
+  const ids=data.map(r=>r.vid);
+  S.pageIds[SK]=ids;
+  const allSel=ids.length>0&&ids.every(id=>S.selected[SK]?.[id]);
+  const allExp=ids.length>0&&ids.every(id=>S.expanded['ver3_'+id]);
+  let tbody=data.map(r=>{
+    const sel=S.selected[SK]?.[r.vid];
+    const exp=S.expanded['ver3_'+r.vid];
+    return `<tr class="${sel?'selected':''}">
+      <td style="width:34px"><input type="checkbox" class="ckb" ${sel?'checked':''} onchange="toggleSel('${SK}','${r.vid}',this)"></td>
+      <td style="width:28px"><span class="expand-toggle ${exp?'open':''}" onclick="toggleExpVer3('${r.vid}')">${exp?'▼':'▶'}</span></td>
+      <td class="mono small">${r.vid}</td>
+      <td><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+      <td>${r.country}</td>
+      <td class="mono">${r.sku}</td>
+      <td>${r.auditSt==='已发布'&&r.verNo?`<a class="tbl-link" onclick="openVerHistory('${r.plat}','${r.site}','${r.sku}','l3')">${r.verNo}</a>`:'<span class="text-muted">-</span>'}</td>
+      <td class="num"><div class="cell-stack">${r.price!==null?`<span class="cell-main tbl-link" onclick="calcL3('${r.refId}')">${r.price.toFixed(2)} <span class="text-muted">${r.cur}</span></span><span class="cell-sub tbl-link" onclick="openStockSnapshot('${r.sku}')">库存快照</span>`:'<span class="text-muted">-</span>'}</div></td>
+      <td class="center">${execTag(r.execSt)}${r.execTag.length?'<br>'+r.execTag.map(t=>tag('danger',t)).join(' '):''}</td>
+      <td class="center">${auditTag(r.auditSt)}</td>
+      <td class="small text-muted nowrap">${r.genTime}</td>
+      <td class="small text-muted nowrap">${r.doneTime||'-'}</td>
+      <td class="small text-muted nowrap">${r.auditTime||'-'}</td>
+      <td class="small">${r.auditBy||'-'}</td>
+      <td class="nowrap"><a class="btn-link" onclick="openLog('L3版本管理','${r.vid}')">日志</a></td>
+    </tr>${exp?renderL3Detail({...r,noTitle:true}).replace('colspan="13"','colspan="15"'):''}`;
+  }).join('');
+  return `<div class="tabs">
+    <div class="tab ${tab==='latest'?'active':''}" onclick="switchVer3Tab('latest')">最新版本 <span class="count">${latestArr.length}</span></div>
+    <div class="tab ${tab==='history'?'active':''}" onclick="switchVer3Tab('history')">历史版本 <span class="count">${M.ver3.length-latestArr.length}</span></div>
+  </div>
+  ${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'sku',label:'SKU',ph:''},{k:'name',label:'产品中文名',ph:''},
+    {k:'exec',label:'执行状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待执行'},{v:'2',t:'执行完成'},{v:'3',t:'执行异常'}]},
+    {k:'audit',label:'价格审核状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待审核'},{v:'2',t:'已发布'},{v:'3',t:'已作废'}]},
+    {k:'gen',label:'生成时间',ph:''},{k:'done',label:'执行完成时间',ph:''},
+    {k:'at',label:'审核时间',ph:''},{k:'aby',label:'审核人',ph:''},{k:'country',label:'备货国家',ph:''},
+    {k:'tag',label:'异常标签',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'尾程运费缺失'},{v:'2',t:'基础数据缺失'}]},
+    {k:'latest',label:'最新版本',type:'select',opts:[{v:'1',t:'是'},{v:'0',t:'否'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px">
+    <button class="btn" onclick="reExecBatch()">重新执行</button>
+    <span style="flex:1"></span><button class="btn-ghost btn">导出</button>
+  </div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:1500px"><thead><tr>
+    <th style="width:34px"><input type="checkbox" class="ckb" ${allSel?'checked':''} onchange="toggleAll('${SK}',this.checked)"></th>
+    <th style="width:70px"><span class="expand-toggle" title="全部展开/收起" style="font-size:12px;color:var(--primary)" onclick="headToggleAll('ver3')">${allExp&&ids.length?'收拢':'展开'}</span></th>
+    <th>价格执行编号</th><th>平台/站点</th><th>清货国家</th><th>SKU</th><th>版本号</th><th class="num">清库价</th><th class="center">执行状态/异常</th><th class="center">价格审核状态</th>
+    <th>生成时间</th><th>执行完成时间</th><th>审核时间</th><th>审核人</th><th style="width:80px">操作</th>
+  </tr></thead><tbody>${tbody||'<tr><td colspan="15"><div class="empty"><div class="ic">📭</div><div class="t">暂无版本数据</div></div></td></tr>'}</tbody></table>${pagination(data.length,1,10)}</div>`;
+}
+function switchVer3Tab(t){S.activeTab.ver3=t;render()}
+function toggleExpVer3(vid){S.expanded['ver3_'+vid]=!S.expanded['ver3_'+vid];render()}
+/* 版本管理行展开：费用明细（横向表格） */
+function renderVerDetail(r){
+  const has=x=>(x!==null&&x!==undefined&&x!=='');
+  // CNY 金额：数值+币种单位（无符号）
+  const money=(x)=>has(x)?x.toFixed(2)+' <span class="cur">CNY</span>':'<span class="empty">-</span>';
+  const txt=x=>has(x)?`<span>${x}</span>`:'<span class="empty">-</span>';
+  const pct=x=>has(x)?x.toFixed(2)+'<span class="cur">%</span>':'<span class="empty">-</span>';
+  return `<tr class="expanded-row"><td colspan="18"><div class="sub-detail">
+    <div class="fee-sub"><table>
+      <thead>
+        <tr class="cat-row"><th class="left">头程运费</th><th>尾程运费</th><th colspan="5">仓储相关费</th><th>商品成本</th><th></th><th colspan="4">平台佣金</th></tr>
+        <tr>
+        <th>头程运费</th>
+        <th>尾程运费</th>
+        <th>QA人力成本</th><th>外验费用</th><th>国内仓仓储费及杂费</th><th>仓储人力成本</th><th>海外仓入库费</th>
+        <th>采购成本</th>
+        <th>汇率/CNY</th>
+        <th>佣金</th><th>退款率</th><th>税率</th><th>广告费比例</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+        <td class="cny">${money(r.ff)}</td>
+        <td class="cny">${money(r.lf)}</td>
+        <td class="cny">${money(r.qa)}</td><td class="cny">${money(r.ex)}</td><td class="cny">${money(r.dc)}</td><td class="cny">${money(r.wlabor)}</td><td class="cny">${money(r.oc)}</td>
+        <td class="cny">${money(r.cost)}</td>
+        <td class="rate">${has(r.rate)?r.rate.toFixed(4):'<span class="empty">-</span>'}</td>
+        <td class="pct">${pct(r.comm)}</td><td class="pct">${pct(r.refund)}</td><td class="pct">${pct(r.tax)}</td><td class="pct">${pct(r.ad)}</td>
+      </tr></tbody>
+    </table></div>
+  </div></td></tr>`;
+}
+function publishVer(vid){confirmBox('确认审核发布？',`版本 <b>${vid}</b> 审核通过后将变为「已发布」，记录审核发布时间与审核人。`,()=>toast(`版本 ${vid} 已发布`))}
+function reExecBatch(){
+  const ids=Object.keys(S.selected.ver||{}).filter(k=>S.selected.ver[k]);
+  if(!ids.length)return toast('请选择需要重新执行的版本','warning');
+  confirmBox('确认批量重新执行？',`已选择 <b>${ids.length}</b> 个版本，<b>价格执行编号不变</b>，重新进入执行队列计算，本次执行将写入执行日志。`,()=>toast(`已重新执行 ${ids.length} 个版本`),{okTxt:'确认执行'});
+}
+function reExec(vid){confirmBox('确认重新执行？',`版本 <b>${vid}</b> <b>价格执行编号不变</b>，重新进入执行队列计算。本次执行将写入执行日志。`,()=>toast(`版本 ${vid} 已重新执行`),{okTxt:'确认执行'})}
+function voidVer(vid){confirmBox('确认作废？',`版本 <b>${vid}</b> 作废后将变为「已作废」，不可恢复。`,()=>toast(`版本 ${vid} 已作废`),{okTxt:'确认作废',danger:true})}
+/* L2 工作台售价点击 → 计算过程（按 sku+平台+站点 关联 M.ver） */
+function calcL2(id,type){
+  const l2=M.l2.find(x=>x.id===id);
+  if(!l2)return;
+  // 找对应的 ver 记录（sku + 平台 + 站点 匹配，优先已发布）
+  let v=M.ver.find(x=>x.sku===l2.sku&&x.plat===l2.plat&&x.site===l2.site&&x.auditSt==='已发布')
+       ||M.ver.find(x=>x.sku===l2.sku&&x.plat===l2.plat&&x.site===l2.site);
+  if(!v){
+    // 无 ver 记录则用 l2.fee 构造一个临时记录
+    const f=l2.fee;
+    v={vid:l2.id,cost:f.cost,ff:f.ff,lf:f.lf,qa:f.qa,ex:f.ex,dc:f.dc,wlabor:f.wlabor,oc:f.oc,rate:f.rate,cur:l2.cur,comm:f.comm,tax:f.tax,refund:f.refund,ad:f.ad,rateN:l2.rateN,rateA:l2.rateA};
+  }
+  openCalcInner(v,type);
+}
+function openCalc(vid,type){
+  let r=M.ver.find(x=>x.vid===vid)||M.ver.find(x=>x.vid.endsWith(vid))||M.ver[0];
+  openCalcInner(r,type,'计算过程 · '+vid);
+}
+function openCalcInner(r,type,modalTitle,opts={}){
+  const fixed=[r.cost,r.ff,r.lf,r.qa,r.ex,r.dc,r.wlabor,r.oc].reduce((a,b)=>a+(b||0),0);
+  const fixedCny=fixed;
+  const fixedSale=fixedCny/r.rate;
+  const pctRate=r.comm+r.tax+r.refund+r.ad;
+  const mrate=type==='N'?r.rateN:r.rateA;
+  const price=fixedSale/(1-mrate/100-pctRate/100);
+  const title=opts.priceTitle||(type==='N'?'必要售价':'基准售价');
+  const body=`
+    <div class="tip-bar info">公式：售价 = 已知具体金额的费用 ÷ (1 − 毛利率 − 基于售价%费用)。先求和 CNY，再按汇率折算为销售币种代入。</div>
+    <div class="form-section-title">① 固定成本合计（CNY）</div>
+    <div class="calc-step">
+      <div><span class="lbl">${opts.costLabel||'采购成本'}</span>+<span class="lbl">头程运费</span>+<span class="lbl">尾程运费</span>+<span class="lbl">QA人力</span>+<span class="lbl">外验</span>+<span class="lbl">国内仓</span>+<span class="lbl">仓储人力</span>+<span class="lbl">海外仓入库</span></div>
+      <div style="margin-top:4px">${r.cost} + ${r.ff} + ${r.lf} + ${r.qa} + ${r.ex} + ${r.dc} + ${r.wlabor} + ${r.oc} = <span class="val">¥ ${fixedCny.toFixed(2)}</span></div>
+    </div>
+    <div class="form-section-title">② 折算销售币种（${r.cur}）</div>
+    <div class="calc-step"><span class="lbl">① ÷ 汇率</span> = ${fixedCny.toFixed(2)} ÷ ${r.rate} = <span class="val">${r.cur} ${fixedSale.toFixed(2)}</span></div>
+    <div class="form-section-title">③ 基于售价%费用率</div>
+    <div class="calc-step"><span class="lbl">佣金</span>+<span class="lbl">税率</span>+<span class="lbl">退款率</span>+<span class="lbl">广告费</span> = ${r.comm}% + ${r.tax}% + ${r.refund}% + ${r.ad}% = <span class="val">${pctRate}%</span></div>
+    <div class="form-section-title">④ 售价（代入${opts.rateLabel||(type==='N'?'必要':'可实现基准')}毛利率 ${mrate}%）</div>
+    <div class="calc-step"><span class="lbl">② ÷ (1 − 毛利率 − ③)</span> = ${fixedSale.toFixed(2)} ÷ (1 − ${mrate}% − ${pctRate}%) = ${fixedSale.toFixed(2)} ÷ ${(1-mrate/100-pctRate/100).toFixed(4)}</div>
+    <div class="calc-final">${title} = ${r.cur} ${price.toFixed(2)}</div>
+    <div class="small text-muted" style="margin-top:10px">汇率折算顺序：先求和后折算（固定成本先以 CNY 求和，再折算为销售币种代入公式）。</div>`;
+  openModal(modalTitle||('计算过程 · '+r.vid),body,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:720});
+}
+/* L3 售价点击 → 清库价计算过程
+   公式：清库价 =（回收成本 + 固定销售费用）÷（1 − 比例销售费用率） */
+function calcL3(id){
+  const r=M.l3.find(x=>x.id===id);
+  if(!r)return;
+  if(r.price===null||r.price===undefined){toast('费用缺失，无法计算清库价','warning');return}
+  const f=r.fee;
+  const has=x=>(x!==null&&x!==undefined&&x!=='')?x:0;
+  const recycle=has(f.cost);                                   // 回收成本（回收本金）
+  const fixParts=[f.lf,f.qa,f.ex,f.dc,f.wlabor,f.oc];           // 6项固定销售费用（不含头程）
+  const fixed=fixParts.reduce((a,b)=>a+has(b),0);
+  const totalCny=recycle+fixed;                                 // CNY 合计
+  const totalSale=totalCny/f.rate;                              // 折算销售币种
+  const pctRate=has(f.comm)+has(f.tax)+has(f.refund)+has(f.ad); // 比例销售费用率
+  const price=totalSale/(1-pctRate/100);
+  const body=`
+    <div class="tip-bar info">公式：清库价 =（回收成本 + 固定销售费用）÷（1 − 比例销售费用率）。先求和 CNY，再按汇率折算为销售币种代入。清库定价不计头程费用。</div>
+    <div class="form-section-title">① 回收成本（CNY）</div>
+    <div class="calc-step"><span class="lbl">回收本金</span> = <span class="val">¥ ${recycle.toFixed(2)}</span></div>
+    <div class="form-section-title">② 固定销售费用合计（CNY，6项，不含头程）</div>
+    <div class="calc-step">
+      <div><span class="lbl">尾程运费</span>+<span class="lbl">QA人力</span>+<span class="lbl">外验</span>+<span class="lbl">国内仓</span>+<span class="lbl">仓储人力</span>+<span class="lbl">海外仓入库</span></div>
+      <div style="margin-top:4px">${has(f.lf).toFixed(2)} + ${has(f.qa).toFixed(2)} + ${has(f.ex).toFixed(2)} + ${has(f.dc).toFixed(2)} + ${has(f.wlabor).toFixed(2)} + ${has(f.oc).toFixed(2)} = <span class="val">¥ ${fixed.toFixed(2)}</span></div>
+    </div>
+    <div class="form-section-title">③ 合计并折算销售币种（${r.cur}）</div>
+    <div class="calc-step"><span class="lbl">（① + ②）÷ 汇率</span> = ${totalCny.toFixed(2)} ÷ ${f.rate} = <span class="val">${r.cur} ${totalSale.toFixed(2)}</span></div>
+    <div class="form-section-title">④ 比例销售费用率</div>
+    <div class="calc-step"><span class="lbl">佣金</span>+<span class="lbl">税率</span>+<span class="lbl">退款率</span>+<span class="lbl">广告费</span> = ${has(f.comm)}% + ${has(f.tax)}% + ${has(f.refund)}% + ${has(f.ad)}% = <span class="val">${pctRate}%</span></div>
+    <div class="form-section-title">⑤ 清库价</div>
+    <div class="calc-step"><span class="lbl">③ ÷ (1 − ④)</span> = ${totalSale.toFixed(2)} ÷ (1 − ${pctRate}%) = ${totalSale.toFixed(2)} ÷ ${(1-pctRate/100).toFixed(4)}</div>
+    <div class="calc-final">清库价 = ${r.cur} ${price.toFixed(2)}</div>
+    <div class="small text-muted" style="margin-top:10px">汇率折算顺序：先求和后折算（回收成本与固定销售费用先以 CNY 求和，再折算为销售币种代入公式）。清库定价不设毛利率项。</div>`;
+  const v3=M.ver3.find(x=>x.refId===(r.vid||r.id));
+  openModal('计算过程 · '+(v3?v3.vid:(r.vid||r.id)),body,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:720});
+}
+
+/* ============================================================
+   页面：运费计算列表
+   ============================================================ */
+function pageFreight(){
+  const tab=S.activeTab.freight;
+  const data=tab==='first'?M.freightFirst:M.freightLast;
+  let tbody='';
+  if(tab==='first'){
+    tbody=data.map(r=>`<tr>
+      <td><div class="cell-stack"><span class="cell-main mono small">${r.vid}</span><span class="cell-sub mono">${r.fid}</span></div></td><td>${r.plat}</td><td>${r.country}</td><td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td><td class="mono">${r.sku}</td><td>${r.cat}</td><td>${r.name}</td>
+      <td class="num">${r.ff.toFixed(2)} <span class="text-muted">CNY</span></td>
+      <td class="center"><a class="btn-link" onclick="openFreightExec('first','${r.sku}')">查看</a></td>
+      <td class="center">${execTag(r.st)}</td>
+      <td class="center">${(r.tags&&r.tags.length)?r.tags.map(t=>tag('danger',t)).join(' '):'<span class="text-muted">-</span>'}</td>
+      <td class="small text-muted nowrap">${r.genT}</td><td class="small text-muted nowrap">${r.doneT||'-'}</td>
+      <td class="nowrap"><a class="btn-link" onclick="toast('已重新执行')">重新执行</a><span class="divider"></span><a class="btn-link muted" onclick="openLog('头程计算')">日志</a></td>
+    </tr>`).join('');
+  }else{
+    tbody=data.map(r=>`<tr>
+      <td><div class="cell-stack"><span class="cell-main mono small">${r.vid}</span><span class="cell-sub mono">${r.fid}</span></div></td><td>${r.plat}</td><td>${r.country}</td><td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td><td class="mono">${r.sku}</td>
+      <td class="center">${r.type==='L3'?tag('orange','L3'):tag('info','L2')}</td>
+      <td class="num">${r.lf.toFixed(2)} <span class="text-muted">CNY</span></td>
+      <td class="center"><a class="btn-link" onclick="openFreightExec('last','${r.sku}')">查看</a></td>
+      <td class="center">${execTag(r.st)}</td>
+      <td class="center">${r.st==='执行异常'?tag('danger','发货仓缺失'):'-'}</td>
+      <td class="small text-muted nowrap">${r.genT}</td><td class="small text-muted nowrap">${r.doneT||'-'}</td>
+      <td class="nowrap"><a class="btn-link" onclick="toast('已重新执行')">重新执行</a><span class="divider"></span><a class="btn-link muted" onclick="openLog('尾程计算')">日志</a></td>
+    </tr>`).join('');
+  }
+  const queryFirst=[
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'exec',label:'执行编号',type:'execNo'},
+    {k:'sku',label:'SKU',ph:''},{k:'name',label:'产品中文名',ph:''},
+    {k:'exec',label:'执行状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'执行完成'},{v:'2',t:'执行异常'}]},
+    {k:'country',label:'备货国家',ph:''}
+  ];
+  const queryLast=[
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'exec',label:'执行编号',type:'execNo'},
+    {k:'sku',label:'SKU',ph:''},{k:'name',label:'产品中文名',ph:''},
+    {k:'exec',label:'执行状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'执行完成'},{v:'2',t:'执行异常'}]},
+    {k:'country',label:'发货国家',ph:''},
+    {k:'type',label:'费用类型',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'L2'},{v:'2',t:'L3'}]}
+  ];
+  return `<div class="tabs">
+    <div class="tab ${tab==='first'?'active':''}" onclick="switchFreightTab('first')">头程计算管理 <span class="count">${M.freightFirst.length}</span></div>
+    <div class="tab ${tab==='last'?'active':''}" onclick="switchFreightTab('last')">尾程计算管理 <span class="count">${M.freightLast.length}</span></div>
+  </div>
+  ${queryBarRender(tab==='first'?queryFirst:queryLast)}
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="toast('请选择待执行项')">批量重新执行</button><span style="flex:1"></span><button class="btn-ghost btn">导出</button></div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:${tab==='first'?'1500px':'1500px'}"><thead><tr>
+    ${tab==='first'?'<th>价格执行编号/运费执行编号</th><th>平台/站点</th><th>备货国家</th><th style="width:48px">主图</th><th>SKU</th><th>产品分类</th><th>产品中文名</th><th class="num">头程运费</th><th class="center">执行记录</th><th class="center">执行状态</th><th class="center">异常标签</th><th>生成时间</th><th>执行完成时间</th><th style="width:140px">操作</th>':'<th>价格执行编号/运费执行编号</th><th>平台/站点</th><th>发货国家</th><th style="width:48px">主图</th><th>SKU</th><th class="center">费用类型</th><th class="num">尾程运费</th><th class="center">执行记录</th><th class="center">执行状态</th><th class="center">异常标签</th><th>生成时间</th><th>执行完成时间</th><th style="width:140px">操作</th>'}
+  </tr></thead><tbody>${tbody}</tbody></table>${pagination(data.length,1,10)}</div>`;
+}
+function switchFreightTab(t){S.activeTab.freight=t;render()}
+function openFreightExec(type,sku){
+  const title=type==='first'?'头程待执行表':'尾程待执行表';
+  let rows;
+  if(type==='first'){
+    rows=[
+      {fid:'TC7260808000031',wh:'美东仓',wt:350,size:'15×12×8',mode:'海运',fc:'美森快船',ff:19.20,calc:'运费池',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:30'},
+      {fid:'TC3260808000032',wh:'美西仓',wt:350,size:'15×12×8',mode:'海运',fc:'美森快船',ff:18.50,calc:'物流试算',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:30'},
+      {fid:'TC9260808000033',wh:'中西部仓',wt:350,size:'15×12×8',mode:'海运',fc:'海运普船',ff:17.80,calc:'物流试算',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:31'}
+    ].sort((a,b)=>a.ff-b.ff);
+    openModal(`${title} · ${sku}`,`<div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>运费执行编号</th><th>备货仓库</th><th class="num">包裹重(g)</th><th>包装尺寸(cm)</th><th>运输方式</th><th class="num">头程运费</th><th class="center">计算方式</th><th>生成时间</th><th>计算完成时间</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono small">${r.fid}</td><td>${r.wh}</td><td class="num">${r.wt}</td><td class="small">${r.size}</td><td>${r.mode}</td><td class="num">${r.ff.toFixed(2)} <span class="text-muted">CNY</span></td><td class="center">${tag(r.calc==='物流试算'?'info':'cyan',r.calc)}</td><td class="small text-muted nowrap">${r.genT}</td><td class="small text-muted nowrap">${r.doneT||'-'}</td></tr>`).join('')}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:960});
+  }else{
+    rows=[
+      {fid:'WC4260808000031',wh:'美东仓',city:'New York',zip:'10024',wt:350,size:'15×12×8',lc:'USPS',lf:4.35,calc:'物流试算',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:31'},
+      {fid:'WC8260808000032',wh:'美西仓',city:'Los Angeles',zip:'90001',wt:350,size:'15×12×8',lc:'USPS',lf:4.20,calc:'物流试算',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:31'},
+      {fid:'WC2260808000033',wh:'美中仓',city:'Chicago',zip:'60601',wt:350,size:'15×12×8',lc:'UPS',lf:3.95,calc:'物流试算',genT:'2026-08-08 14:00',doneT:'2026-08-08 14:32'}
+    ].sort((a,b)=>a.lf-b.lf);
+    openModal(`${title} · ${sku}`,`<div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>运费执行编号</th><th>发货仓库</th><th>目的城市</th><th>目的邮编</th><th class="num">包裹重(g)</th><th>包装尺寸(cm)</th><th class="num">尾程运费</th><th class="center">计算方式</th><th>生成时间</th><th>计算完成时间</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono small">${r.fid}</td><td>${r.wh}</td><td>${r.city}</td><td class="mono small">${r.zip}</td><td class="num">${r.wt}</td><td class="small">${r.size}</td><td class="num">${r.lf.toFixed(2)} <span class="text-muted">CNY</span></td><td class="center">${tag('info',r.calc)}</td><td class="small text-muted nowrap">${r.genT}</td><td class="small text-muted nowrap">${r.doneT||'-'}</td></tr>`).join('')}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">关闭</button>`,{w:980});
+  }
+}
+
+/* 运费池加权计算列表 Mock:fid=运费池加权执行编号 YC+随机1位+年月日+6流水;7项加权费用为单件CNY */
+M.pool=[
+  {img:'🎧',vid:'L299999999260808001',fid:'YC5260808000001',plat:'eBay',site:'US',country:'美国',sku:'99999999',cat:'3C数码/耳机',name:'蓝牙降噪耳机 Pro',ff:18.50,cost:85.00,qa:1.80,ex:0.60,dc:1.20,wl:1.10,oc:0.40,st:'执行完成',tags:[],genT:'2026-08-08 14:00',doneT:'2026-08-08 14:33'},
+  {img:'🖱️',vid:'L255665566260808001',fid:'YC8260808000002',plat:'eBay',site:'US',country:'美国',sku:'55665566',cat:'3C数码/外设',name:'无线静音鼠标',ff:6.80,cost:22.00,qa:0.50,ex:0.30,dc:0.60,wl:0.40,oc:0.20,st:'执行完成',tags:[],genT:'2026-08-08 09:30',doneT:'2026-08-08 10:02'},
+  {img:'🔌',vid:'L211071107260807001',fid:'YC3260807000003',plat:'eBay',site:'US',country:'美国',sku:'11071107',cat:'3C数码/充电',name:'65W GaN 充电器',ff:9.50,cost:null,qa:0.90,ex:0.40,dc:0.80,wl:0.60,oc:0.30,st:'执行异常',tags:['采购成本缺失'],genT:'2026-08-07 16:00',doneT:'2026-08-07 16:05'},
+  {img:'📱',vid:'L244014401260808002',fid:'YC7260808000004',plat:'eBay',site:'US',country:'美国',sku:'44014401',cat:'3C数码/配件',name:'手机壳 硅胶 黑色',ff:2.10,cost:8.00,qa:0.20,ex:0.10,dc:0.25,wl:0.15,oc:0.08,st:'待执行',tags:[],genT:'2026-08-08 13:50',doneT:''}
+];
+/* ============================================================
+   页面:运费池加权计算列表
+   ============================================================ */
+function pagePool(){
+  const money=x=>x!==null&&x!==undefined?`<td class="num">${x.toFixed(2)} <span class="text-muted">CNY</span></td>`:'<td class="num"><span class="text-muted">-</span></td>';
+  const rows=M.pool.map((r,i)=>`<tr>
+    <td><div class="cell-stack"><span class="cell-main mono small">${r.vid}</span><span class="cell-sub mono">${r.fid}</span></div></td>
+    <td class="nowrap"><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+    <td>${tag('cyan',r.country)}</td>
+    <td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td>
+    <td class="mono">${r.sku}</td><td>${r.cat}</td><td>${r.name}</td>
+    ${money(r.ff)}${money(r.cost)}${money(r.qa)}${money(r.ex)}${money(r.dc)}${money(r.wl)}${money(r.oc)}
+    <td class="center"><a class="btn-link" onclick="openPoolExec(${i})">查看</a></td>
+    <td class="center">${(r.tags&&r.tags.length)?tag('danger','运费池获取异常'):'<span class="text-muted">-</span>'}</td>
+    <td class="center">${execTag(r.st)}</td>
+    <td class="small text-muted nowrap">${r.genT}</td><td class="small text-muted nowrap">${r.doneT||'-'}</td>
+    <td class="nowrap"><a class="btn-link" onclick="toast('已重新执行')">重新执行</a><span class="divider"></span><a class="btn-link muted" onclick="openLog('运费池加权','${r.fid}')">日志</a></td>
+  </tr>`).join('');
+  return `${queryBarRender([
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'exec',label:'执行编号',type:'execNo',opts:['价格执行编号','运费池加权执行编号']},
+    {k:'sku',label:'SKU',ph:''},
+    {k:'name',label:'产品中文名',ph:''},
+    {k:'exec',label:'执行状态',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'待执行'},{v:'2',t:'执行完成'},{v:'3',t:'执行异常'}]},
+    {k:'gen',label:'生成时间',ph:'开始~结束'},
+    {k:'done',label:'执行完成时间',ph:'开始~结束'}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><span style="flex:1"></span><button class="btn-ghost btn">导出</button></div>
+  <div class="table-wrap" style="overflow:auto"><table class="tbl" style="min-width:1980px"><thead><tr>
+    <th>价格执行编号/运费池加权执行编号</th><th>平台/站点</th><th>备货国家</th><th style="width:48px">主图</th><th>SKU</th><th>产品分类</th><th>产品中文名</th><th class="num">头程运费</th><th class="num">采购成本</th><th class="num">QA人力成本</th><th class="num">外验费用</th><th class="num">国内仓储费</th><th class="num">仓储人力成本</th><th class="num">海外仓入库费</th><th class="center">执行记录</th><th class="center">是否异常</th><th class="center">执行状态</th><th>生成时间</th><th>执行完成时间</th><th style="width:130px">操作</th>
+  </tr></thead><tbody>${rows}</tbody></table>${pagination(M.pool.length,1,10)}</div>`;
+}
+/* 执行记录弹窗:按仓库的加权费用明细 */
+function openPoolExec(i){
+  const r=M.pool[i];
+  const demo=[
+    {fid:'YC5260808000011',wh:'美西仓',sku:r.sku,stock:'320 件',ff:18.50,cost:85.00,qa:1.80,ex:0.60,dc:1.20,wl:1.10,oc:0.40,calcT:'2026-08-08 14:33'},
+    {fid:'YC5260808000012',wh:'美东仓',sku:r.sku,stock:'180 件',ff:19.20,cost:85.00,qa:1.80,ex:0.60,dc:1.20,wl:1.10,oc:0.40}
+  ];
+  const money=x=>`<td class="num">${x.toFixed(2)} <span class="text-muted">CNY</span></td>`;
+  const rows=demo.map(d=>`<tr><td class="mono small">${d.fid}</td><td>${d.wh}</td><td class="mono">${d.sku}</td><td class="num">${d.stock}</td>${money(d.ff)}${money(d.cost)}${money(d.qa)}${money(d.ex)}${money(d.dc)}${money(d.wl)}${money(d.oc)}<td class="small text-muted nowrap">${d.calcT}</td></tr>`).join('');
+  openModal(`运费池加权执行记录 · ${r.sku}`,
+    `<div class="table-wrap" style="box-shadow:none;border:1px solid var(--border-l)"><table class="tbl"><thead><tr><th>运费池加权执行编号</th><th>仓库</th><th>SKU</th><th class="num">库存数量</th><th class="num">头程运费</th><th class="num">采购成本</th><th class="num">QA人力成本</th><th class="num">外验费用</th><th class="num">国内仓储费</th><th class="num">仓储人力成本</th><th class="num">海外仓入库费</th><th>计算时间</th></tr></thead><tbody>${rows}</tbody></table></div>`,
+    `<button class="btn" onclick="closeModal()">关闭</button>`,{w:1060});
+}
+
+/* ============================================================
+   页面：底线利润率列表
+   ============================================================ */
+function pageProfit(){
+  const rows=M.profit.map(r=>`<tr>
+    <td style="width:40px"><div style="width:32px;height:32px;background:var(--th-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px">${r.img}</div></td>
+    <td class="mono">${r.sku}</td><td>${r.cat}</td>
+    <td class="center"><span class="tag-group"><span class="tag default">${r.plat}</span><span class="tag default">${r.site}</span></span></td>
+    <td class="num"><div class="cell-stack"><span class="cell-main">${r.rateN}%</span><span class="cell-sub">基准 ${r.base}% + 货值加点 ${r.add>=0?'+':''}${r.add}%</span></div></td>
+    <td class="num">${r.rateA}%</td>
+    <td class="small text-muted">${r.ut}</td>
+    <td class="nowrap"><a class="btn-link" onclick="openLog('销售毛利率','${r.sku}')">日志</a></td>
+  </tr>`).join('');
+  return `${queryBarRender([
+    {k:'sku',label:'SKU',ph:''},
+    {k:'cat',label:'产品分类',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'3C数码'},{v:'2',t:'户外'}]},
+    {k:'plat',label:'平台/站点',type:'platSite'},
+    {k:'rateN',label:'必要销售毛利率(%)',ph:'下限~上限'},
+    {k:'rateA',label:'基准销售毛利率(%)',ph:'下限~上限'}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><span style="flex:1"></span><button class="btn-ghost btn">导出</button></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th style="width:48px">主图</th><th>SKU</th><th>产品分类</th><th class="center">平台/站点</th><th class="num">必要销售毛利率</th><th class="num">基准销售毛利率</th><th>更新时间</th><th style="width:80px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.profit.length,1,10)}</div>`;
+}
+
+/* ============================================================
+   页面：费用项配置
+   ============================================================ */
+function pageFeeItem(){
+  const rows=M.feeItem.map((r,i)=>`<tr>
+    <td>${r.cat}</td><td>${r.item}</td><td class="center">${tag('default',r.plat)}</td><td class="center"><span class="sw ${r.st==='启用'?'on':''}" onclick="toggleSt('feeItem',${i})" title="${r.st==='启用'?'点击停用':'点击启用'}"></span></td><td class="small">${r.remark||'<span class="text-muted">-</span>'}</td>
+    <td class="nowrap"><a class="btn-link" onclick="editFeeItem(${i})">编辑</a><span class="divider"></span><a class="btn-link" onclick="openLog('费用项配置','${r.item}')">日志</a></td>
+  </tr>`).join('');
+  return `${queryBarRender([
+    {k:'cat',label:'费用大类',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'商品成本'},{v:'2',t:'头程运费'},{v:'3',t:'平台佣金'}]},
+    {k:'item',label:'费用项',ph:''},
+    {k:'plat',label:'费用平台',type:'select',opts:[{v:'',t:'全部'},{v:'eBay',t:'eBay'}]},
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="editFeeItem(-1)">+ 新增费用项</button><span style="flex:1"></span><button class="btn-ghost btn">导出</button></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>费用大类</th><th>费用项</th><th class="center">费用使用平台</th><th class="center">状态</th><th>备注</th><th style="width:130px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.feeItem.length,1,10)}</div>`;
+}
+function editFeeItem(i){
+  const r=i>=0?M.feeItem[i]:{cat:'',item:'',needCalc:'计算配置',plat:'eBay',remark:'',st:'启用'};
+  const body=`<div class="form-grid">
+    <div class="form-item"><label><span class="req">*</span>费用大类</label><select class="select"><option ${r.cat==='商品成本'?'selected':''}>商品成本</option><option ${r.cat==='头程运费'?'selected':''}>头程运费</option><option ${r.cat==='尾程运费'?'selected':''}>尾程运费</option><option ${r.cat==='平台佣金'?'selected':''}>平台佣金</option><option ${r.cat==='仓储相关费'?'selected':''}>仓储相关费</option></select></div>
+    <div class="form-item"><label><span class="req">*</span>费用项</label><input class="input" value="${r.item}" placeholder="请输入费用项名称"></div>
+
+    <div class="form-item"><label><span class="req">*</span>费用使用平台</label><select class="select" disabled><option selected>eBay</option></select><div class="hint">一期固定 eBay</div></div>
+    <div class="form-item full"><label>备注</label><input class="input" value="${r.remark||''}" placeholder="请输入备注（非必填）"></div>
+  </div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();toast('${i>=0?'费用项已更新':'费用项已新增'}')">保存</button>`;
+  openModal(i>=0?'编辑费用项':'新增费用项',body,footer,{w:640});
+}
+function toggleSt(arr,i){M[arr][i].st=M[arr][i].st==='启用'?'停用':'启用';toast('状态已更新');render()}
+
+/* ============================================================
+   页面：费用计算配置
+   ============================================================ */
+function pageFeeCalc(){
+  const modeTag=m=>tag(m==='售价百分比'?'info':m==='固定费用'?'cyan':'purple',m);
+  const rows=M.feeCalc.map((r,i)=>{
+    const typeTags=r.types.map(t=>tag(t==='开品推荐价'?'default':t==='刊登销售价'?'info':'orange',t)).join(' ');
+    const modeHtml=r.modes.map(x=>modeTag(x.mode)).join('<span class="text-muted" style="margin:0 3px">+</span>');
+    const logicHtml=r.modes.map(x=>`<div>${x.logic}</div>`).join('')+(r.modes.length>1?'<div class="text-muted" style="font-size:11px">多项分别计算后求和</div>':'');
+    return `<tr>
+      <td><span class="tag-group">${typeTags}</span></td>
+      <td>${r.item}</td><td class="center">${r.plat?tag('default',r.plat):'<span class="text-muted">全部</span>'}</td><td>${r.site}</td><td class="small">${r.provider||'<span class="text-muted">-</span>'}</td><td class="small">${r.country||'<span class="text-muted">-</span>'}</td><td>${r.cat}</td>
+      <td>${`<span class="tag-pop">${modeHtml}<span class="tag-pop-tip">${r.modes.map(x=>`<div>${x.mode}：${x.logic}</div>`).join('')}</span></span>`}</td>
+      <td class="small">${r.remark||'<span class="text-muted">-</span>'}</td>
+      <td class="small">${r.users.join(' / ')}</td><td class="center"><span class="sw ${r.st==='启用'?'on':''}" onclick="toggleSt('feeCalc',${i})" title="${r.st==='启用'?'点击停用':'点击启用'}"></span></td>
+      <td class="nowrap"><a class="btn-link" onclick="editFeeCalc(${i})">编辑</a><span class="divider"></span><a class="btn-link" onclick="openLog('费用计算配置','${r.item}')">日志</a></td>
+    </tr>`;
+  }).join('');
+  return `${queryBarRender([
+    {k:'type',label:'归属价格类型',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'开品推荐价'},{v:'2',t:'刊登销售价'},{v:'3',t:'清库价'}]},
+    {k:'item',label:'费用项',ph:''},
+    {k:'mode',label:'计算方式',type:'select',opts:[{v:'',t:'全部'},{v:'1',t:'售价百分比'},{v:'2',t:'固定费用'},{v:'3',t:'重量段'}]},
+    {k:'plat',label:'平台',type:'select',opts:[{v:'',t:'全部'},{v:'eBay',t:'eBay'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="editFeeCalc(-1)">+ 新增计算配置</button></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>归属价格类型</th><th>费用项</th><th class="center">平台</th><th>站点</th><th>海外仓服务商</th><th>国家</th><th>产品分类</th><th>计算方式</th><th>备注</th><th>费用配置人员</th><th class="center">状态</th><th style="width:130px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.feeCalc.length,1,10)}</div>`;
+}
+function editFeeCalc(i){
+
+  const r=i>=0?M.feeCalc[i]:{types:['L2'],dim:'产品分类+平台+站点',item:'',plat:'eBay',site:'全部',cat:'全部',users:['张无忌'],remark:'',modes:[{mode:'售价百分比',logic:''}],st:'启用'};
+  const body=`<div class="form-grid">
+    <div class="form-item"><label><span class="req">*</span>归属价格类型（可多选）</label><div style="display:flex;gap:12px;padding-top:4px"><label><input type="checkbox" class="ckb" ${r.types.includes('开品推荐价')?'checked':''}> 开品推荐价</label><label><input type="checkbox" class="ckb" ${r.types.includes('刊登销售价')?'checked':''}> 刊登销售价</label><label><input type="checkbox" class="ckb" ${r.types.includes('清库价')?'checked':''}> 清库价</label></div></div>
+    <div class="form-item"><label><span class="req">*</span>配置维度</label><select class="select" onchange="dimChange(this)">${["产品分类+平台+站点","产品分类+海外仓服务商+国家","产品分类+国家","产品分类"].map(d=>`<option ${r.dim===d?'selected':''}>${d}</option>`).join('')}</select></div>
+    <div class="form-item"><label><span class="req">*</span>费用项</label><select class="select" ${i>=0?'disabled':''}>${M.feeItem.filter(x=>x.needCalc==='计算配置').map(x=>`<option ${r.item===x.item?'selected':''}>${x.item}</option>`).join('')}</select><div class="hint">仅可选择参与计算配置的费用项${i>=0?'；编辑时不可修改费用项':''}</div></div>
+    <div class="form-item" id="dfPlat"><label>平台</label><select class="select" onchange="feeCalcPlatChange(this)"><option value="" ${r.plat===''?'selected':''}>全部</option><option ${r.plat==='eBay'?'selected':''}>eBay</option></select><div class="hint">非必填，不选则适用全部平台；站点选项随平台加载</div></div>
+    <div class="form-item" id="dfSite"><label>站点（可多选）</label><div class="ms-drop" id="feeSiteDrop" data-ph="全部站点"><div class="ms-toggle" onclick="toggleMsDrop(this)">全部站点 <span class="arrow" style="font-size:10px">▾</span></div><div class="ms-menu">${msSiteHtml(r.plat?(PLAT_SITES[r.plat]||[]):['US','UK','DE'])}</div></div></div>
+    <div class="form-item" id="dfProvider"><label>海外仓服务商</label><select class="select">${['万邑通','谷仓','燕文','4PX'].map(p=>`<option ${r.provider===p?'selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="form-item" id="dfCountry"><label>国家</label><select class="select">${['美国','英国','德国','加拿大','法国'].map(c=>`<option ${r.country===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-item"><label>产品分类</label><select class="select">${['全部','3C数码','户外','箱包','家居'].map(c=>`<option ${r.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-item"><label><span class="req">*</span>费用配置人员</label><div class="ms-drop" data-ph="请选择人员"><div class="ms-toggle" onclick="toggleMsDrop(this)">${r.users.join('/')} <span class="arrow" style="font-size:10px">▾</span></div><div class="ms-menu">${['张无忌','赵敏','周芷若','曾阿牛','小昭','宋远桥','杨逍'].map(u=>`<div class="ms-opt${r.users.includes(u)?' sel':''}" onclick="msPickSite(this)">${u}</div>`).join('')}</div></div><div class="hint">支持多选</div></div>
+    <div class="form-item"><label>备注</label><input class="input" value="${r.remark||''}" placeholder="请输入备注（非必填）"></div>
+    <div class="form-item full"><label><span class="req">*</span>计算方式维护</label><div class="hint">支持维护多条（如同时配置固定费用与售价百分比），计算时分别计算后求和；同一配置内计算方式不允许重复</div><table class="calc-tbl"><thead><tr><th style="width:150px">计算方式</th><th>计算逻辑</th><th style="width:64px">操作</th></tr></thead><tbody id="calcRows">${r.modes.map(m=>calcRowHtml(m)).join('')}</tbody></table><button class="btn btn-sm" style="margin-top:6px" onclick="calcRowAdd()">+ 新增计算方式</button></div>
+  </div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();toast('${i>=0?'计算配置已更新':'计算配置已新增'}')">保存</button>`;
+  openModal(i>=0?'编辑费用计算配置':'新增费用计算配置',body,footer,{w:720});
+  dimChange({value:r.dim});
+}
+/* 计算方式维护：表格形式，每行 = 计算方式下拉 + 对应计算逻辑；同一配置内计算方式不可重复 */
+const CALC_MODES=[{v:'pct',t:'售价百分比'},{v:'fix',t:'固定费用'},{v:'weight',t:'重量段'},{v:'wr',t:'计重计费'},{v:'fla',t:'头程运费加点'},{v:'bw',t:'屏蔽重量段计费'}];
+function calcLogicHtml(m){
+  if(m==='pct')return `<div style="display:flex;align-items:center;gap:8px"><input class="input" style="width:80px" value="13"> <span>%</span></div>`;
+  if(m==='fix')return `<div style="display:flex;align-items:center;gap:8px"><span>¥</span><input class="input" style="width:120px" value="1.80"> <select class="select" style="width:100px"><option>CNY</option><option>USD</option></select></div><div class="hint">按固定金额取费</div>`;
+  if(m==='wr')return `<div style="display:flex;align-items:center;gap:8px"><input class="input" style="width:90px" value="18.50"> <span>/kg</span></div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small text-muted">体积重系数</span><input class="input" style="width:70px" value="6000"></div>`;
+  if(m==='fla')return `<div style="display:flex;align-items:center;gap:8px"><input class="input" style="width:80px" value="5"> <span>%</span></div><div class="hint">头程运费按比例加点</div>`;
+  if(m==='bw')return '<div class="hint" style="margin:0">该方式无需维护参数，勾选后屏蔽重量段计费</div>';
+  return `<div class="form-grid" style="grid-template-columns:1fr 1fr"><div><label class="small text-muted">计费重量取值</label><select class="select" style="margin-top:4px"><option>实重 / 体积重 取大</option><option>实重</option><option>体积重</option></select></div><div><label class="small text-muted">体积重系数</label><input class="input" style="margin-top:4px" value="6000"></div></div><label class="small text-muted" style="margin-top:10px;display:block">各重量段对应费用</label><div class="weight-segs"><table><thead><tr><th>段下限(g)</th><th>段上限(g)</th><th class="num">费用(¥)</th><th></th></tr></thead><tbody><tr><td><input class="input" value="0"></td><td><input class="input" value="100"></td><td><input class="input" value="2.00"></td><td><span class="del">✕</span></td></tr><tr><td><input class="input" value="100"></td><td><input class="input" value="300"></td><td><input class="input" value="4.50"></td><td><span class="del">✕</span></td></tr><tr><td><input class="input" value="300"></td><td><input class="input" value="500"></td><td><input class="input" value="7.00"></td><td><span class="del">✕</span></td></tr></tbody></table></div><button class="btn btn-sm" style="margin-top:6px" onclick="toast('已新增重量段')">+ 新增段</button>`;
+}
+function calcRowHtml(m){
+  const v=typeof m==='string'?m:(CALC_MODES.find(o=>o.t===m.mode)||CALC_MODES[0]).v;
+  return `<tr data-mode="${v}">
+    <td><select class="select" style="width:100%" onchange="calcRowSwitch(this)">${CALC_MODES.map(o=>`<option value="${o.v}"${o.v===v?' selected':''}>${o.t}</option>`).join('')}</select></td>
+    <td class="calc-logic">${calcLogicHtml(v)}</td>
+    <td><span class="del" onclick="calcRowDel(this)">✕ 移除</span></td>
+  </tr>`;
+}
+function calcRowSwitch(sel){
+  const tr=sel.closest('tr');
+  const used=$$('#calcRows select').filter(s=>s!==sel).map(s=>s.value);
+  if(used.includes(sel.value)){toast('同一配置内计算方式不允许重复','warning');sel.value=tr.dataset.mode;return}
+  tr.dataset.mode=sel.value;
+  tr.querySelector('.calc-logic').innerHTML=calcLogicHtml(sel.value);
+}
+function calcRowAdd(){
+  const used=$$('#calcRows select').map(s=>s.value);
+  const next=CALC_MODES.find(o=>!used.includes(o.v));
+  if(!next){toast('已维护全部计算方式，无法新增','warning');return}
+  $('#calcRows').insertAdjacentHTML('beforeend',calcRowHtml(next.v));
+}
+function calcRowDel(elm){const wrap=$('#calcRows');if(wrap.children.length<=1){toast('至少保留一条计算方式','warning');return}elm.closest('tr').remove()}
+
+/* ============================================================
+   页面：必要销售毛利率配置
+   ============================================================ */
+function pageRateConf(){
+  const tab=S.activeTab.rate||'base';
+  let content='';
+  if(tab==='base'){
+    const rows=M.rateBase.map((r,i)=>`<tr><td>${r.cat}</td><td>${r.plat?tag('default',r.plat):'<span class="text-muted">全部</span>'}</td><td class="num">${r.rate}%</td><td class="small text-muted">${r.ut}</td><td class="nowrap"><a class="btn-link" onclick="editRateBase(${i})">编辑</a></td></tr>`).join('');
+    content=`<div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="editRateBase(-1)">+ 新增基础毛利率</button></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>一级产品分类</th><th>平台</th><th class="num">基础毛利率</th><th>更新时间</th><th style="width:80px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.rateBase.length,1,10)}</div>`;
+  }else{
+    const rows=M.rateAdd.map((r,i)=>`<tr><td>${r.cat}</td><td class="num">${r.lo}</td><td class="num">${r.hi===null?'+∞':r.hi}</td><td class="num">${r.add>=0?'+':''}${r.add}%</td><td class="small">${r.d||'-'}</td><td class="nowrap"><a class="btn-link" onclick="editRateAdd(${i})">编辑</a><span class="divider"></span><a class="btn-link danger" onclick="toast('已删除')">删除</a></td></tr>`).join('');
+    content=`<div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="editRateAdd(-1)">+ 新增货值加点</button></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>一级产品分类</th><th class="num">货值下限(元)</th><th class="num">货值上限(元)</th><th class="num">货值加点</th><th>说明</th><th style="width:130px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.rateAdd.length,1,10)}</div>`;
+  }
+  return `<div class="tabs">
+    <div class="tab ${tab==='base'?'active':''}" onclick="switchRateTab('base')">基础毛利率配置</div>
+    <div class="tab ${tab==='add'?'active':''}" onclick="switchRateTab('add')">货值加点配置</div>
+  </div>${content}`;
+}
+function switchRateTab(t){S.activeTab.rate=t;render()}
+function editRateBase(i){
+  const r=i>=0?M.rateBase[i]:{cat:'',plat:'',rate:15,ut:''};
+  const body=`<div class="form-grid"><div class="form-item"><label><span class="req">*</span>一级产品分类</label><select class="select"><option ${r.cat==='3C数码'?'selected':''}>3C数码</option><option ${r.cat==='户外'?'selected':''}>户外</option><option ${r.cat==='箱包'?'selected':''}>箱包</option><option ${r.cat==='家居'?'selected':''}>家居</option></select></div><div class="form-item"><label>平台</label><select class="select"><option value="" ${!r.plat?'selected':''}>全部</option><option ${r.plat==='eBay'?'selected':''}>eBay</option></select><div class="hint">非必填，空=适用全部平台</div></div><div class="form-item"><label><span class="req">*</span>基础毛利率</label><div style="display:flex;align-items:center;gap:6px"><input class="input" value="${r.rate}" style="width:120px"><span>%</span></div></div></div><div class="tip-bar info">保存后将同步更新销售毛利率列表。</div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();toast('基础毛利率已保存，已同步更新销售毛利率列表')">保存</button>`;
+  openModal(i>=0?'编辑基础毛利率':'新增基础毛利率',body,footer,{w:480});
+}
+function editRateAdd(i){
+  const r=i>=0?M.rateAdd[i]:{cat:'3C数码',lo:0,hi:20,add:0,d:''};
+  const body=`<div class="form-grid"><div class="form-item"><label><span class="req">*</span>一级产品分类</label><select class="select"><option selected>3C数码</option><option>户外</option></select></div><div class="form-item"><label><span class="req">*</span>货值加点</label><div style="display:flex;align-items:center;gap:6px"><input class="input" value="${r.add}" style="width:120px"><span>%</span><div class="hint" style="margin:0">可为负</div></div></div><div class="form-item"><label><span class="req">*</span>货值区间(元)</label><div style="display:flex;align-items:center;gap:6px"><input class="input" value="${r.lo}" style="width:80px"><span>~</span><input class="input" value="${r.hi===null?'':r.hi}" placeholder="+∞" style="width:80px"></div></div><div class="form-item"><label>说明</label><input class="input" value="${r.d}"></div></div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();toast('货值加点已保存，已同步更新销售毛利率列表')">保存</button>`;
+  openModal(i>=0?'编辑货值加点':'新增货值加点',body,footer,{w:560});
+}
+
+/* ============================================================
+   页面：清库回收率配置
+   ============================================================ */
+function pageClearConf(){
+  const rows=M.clearConf.map((r,i)=>{
+    return `<tr>
+      <td>${r.whType==='平台仓'?tag('info','平台仓'):tag('cyan','海外仓')}</td>
+      <td class="num">${r.ageLo} ~ ${r.ageHi===null?'+∞':r.ageHi} 天</td>
+      <td class="num">${r.dep}%</td>
+      <td class="num">${(100-r.dep).toFixed(0)}%</td>
+      <td class="small text-muted nowrap">${r.ut}</td>
+      <td>${r.user}</td>
+      <td class="nowrap"><a class="btn-link" onclick="editClearConf(${i})">编辑</a><span class="divider"></span><a class="btn-link danger" onclick="delClearConf(${i})">删除</a></td>
+    </tr>`;
+  }).join('');
+  return `<div class="page-actions" style="margin-bottom:8px">
+    <button class="btn btn-primary" onclick="editClearConf(-1)">+ 新增</button>
+  </div>
+  <div class="table-wrap"><table class="tbl"><thead><tr>
+    <th>仓库类型</th><th class="num">库龄段</th><th class="num">减值比例</th><th class="num">现金回收率</th><th>更新时间</th><th>更新人</th><th style="width:120px">操作</th>
+  </tr></thead><tbody>${rows||'<tr><td colspan="7"><div class="empty"><div class="ic">📭</div><div class="t">暂无配置</div></div></td></tr>'}</tbody></table>${pagination(M.clearConf.length,1,10)}</div>`;
+}
+function editClearConf(i){
+  const r=i>=0?M.clearConf[i]:{whType:'平台仓',ageLo:'',ageHi:'',dep:''};
+  const body=`<div class="form-grid">
+    <div class="form-item"><label><span class="req">*</span>仓库类型</label><select class="select" id="ccWhType"><option ${r.whType==='平台仓'?'selected':''}>平台仓</option><option ${r.whType==='海外仓'?'selected':''}>海外仓</option></select></div>
+    <div class="form-item"><label><span class="req">*</span>库龄段（天）</label><div style="display:flex;align-items:center;gap:6px"><input class="input" id="ccAgeLo" value="${r.ageLo}" placeholder="下限" style="width:90px"><span>~</span><input class="input" id="ccAgeHi" value="${r.ageHi===null?'':r.ageHi}" placeholder="上限，空=不限" style="flex:1"></div></div>
+    <div class="form-item"><label><span class="req">*</span>减值比例</label><div style="display:flex;align-items:center;gap:6px"><input class="input" id="ccDep" value="${r.dep}" style="width:120px"><span>%</span><div class="hint" style="margin:0">现金回收率 = 1 − 减值比例，自动计算</div></div></div>
+  </div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveClearConf(${i})">保存</button>`;
+  openModal(i>=0?'编辑清库现金回收率':'新增清库现金回收率',body,footer,{w:560});
+}
+function saveClearConf(i){
+  const whType=$('#ccWhType').value;
+  const ageLo=parseFloat($('#ccAgeLo').value);
+  const ageHi=$('#ccAgeHi').value===''?null:parseFloat($('#ccAgeHi').value);
+  const dep=parseFloat($('#ccDep').value);
+  if(isNaN(ageLo)||isNaN(dep)){toast('请填写完整的库龄段、减值比例','warning');return}
+  if(ageHi!==null&&ageHi<=ageLo){toast('库龄段上限必须大于下限','warning');return}
+  if(dep<0||dep>100){toast('减值比例须在 0~100% 之间','warning');return}
+  const cash=100-dep;
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const ut=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  if(i>=0){Object.assign(M.clearConf[i],{whType,ageLo,ageHi,dep,ut,user:'张无忌'});toast('配置已更新')}
+  else{M.clearConf.push({id:Date.now(),whType,ageLo,ageHi,dep,ut,user:'张无忌'});toast('新增配置成功')}
+  closeModal();render();
+}
+function delClearConf(i){confirmBox('确认删除？','将删除该条配置：<b>'+M.clearConf[i].whType+' '+M.clearConf[i].ageLo+'~'+(M.clearConf[i].ageHi===null?'+∞':M.clearConf[i].ageHi)+'天</b>，删除后不可恢复。',()=>{M.clearConf.splice(i,1);toast('已删除');render()},{okTxt:'确认删除',danger:true})}
+
+/* ============================================================
+   页面：订单费用映射
+   ============================================================ */
+function pageFeeMap(){
+  const rows=M.feeMap.map((r,i)=>`<tr>
+    <td class="mono">${r.code}</td><td>${r.src}</td><td>${r.target}</td><td class="center">${tag('default',r.plat)}</td><td class="small">${r.rule||'-'}</td><td class="small">${r.eff}</td><td class="center">${r.st==='启用'?tag('success','启用'):tag('default','停用')}</td>
+    <td class="nowrap"><a class="btn-link" onclick="editFeeMap(${i})">编辑</a><span class="divider"></span><a class="btn-link ${r.st==='启用'?'danger':'muted'}" onclick="toggleSt('feeMap',${i})">${r.st==='启用'?'停用':'启用'}</a></td>
+  </tr>`).join('');
+  return `<div class="tip-bar info">将订单利润报表费用项映射为定价中台标准成本项（C001–C030），保障预估与实际口径一致。后续新增订单费用项仅需更新映射，不改核心计算。</div>
+  ${queryBarRender([
+    {k:'src',label:'订单费用项',ph:''},
+    {k:'target',label:'标准成本项',type:'select',opts:[{v:'',t:'全部'},{v:'C004',t:'C004 采购成本'},{v:'C011',t:'C011 头程运费'}]},
+    {k:'plat',label:'适用平台',type:'select',opts:[{v:'',t:'全部'},{v:'eBay',t:'eBay'}]}
+  ])}
+  <div class="page-actions" style="margin-bottom:8px"><button class="btn btn-primary" onclick="editFeeMap(-1)">+ 新增映射</button><span style="flex:1"></span><button class="btn-ghost btn">刷新</button></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>映射编码</th><th>订单利润报表费用项</th><th>对应标准成本项</th><th class="center">适用平台</th><th>映射规则/说明</th><th>生效时间</th><th class="center">状态</th><th style="width:130px">操作</th></tr></thead><tbody>${rows}</tbody></table>${pagination(M.feeMap.length,1,10)}</div>`;
+}
+function editFeeMap(i){
+  const r=i>=0?M.feeMap[i]:{code:'MAP008',src:'',target:'',plat:'eBay',rule:'',eff:'2026-08-09',st:'启用'};
+  const body=`<div class="form-grid">
+    <div class="form-item"><label><span class="req">*</span>映射编码</label><input class="input" value="${r.code}" disabled></div>
+    <div class="form-item"><label><span class="req">*</span>订单利润报表费用项</label><input class="input" value="${r.src}" placeholder="源字段"></div>
+    <div class="form-item"><label><span class="req">*</span>对应标准成本项</label><select class="select"><option ${r.target.startsWith('C004')?'selected':''}>C004 采购成本</option><option ${r.target.startsWith('C011')?'selected':''}>C011 头程运费</option><option ${r.target.startsWith('C021')?'selected':''}>C021 尾程运费</option><option ${r.target.startsWith('C031')?'selected':''}>C031 佣金</option><option ${r.target.startsWith('C032')?'selected':''}>C032 税率</option><option ${r.target.startsWith('C033')?'selected':''}>C033 退款率</option><option ${r.target.startsWith('C034')?'selected':''}>C034 广告费比例</option></select></div>
+    <div class="form-item"><label><span class="req">*</span>适用平台</label><select class="select" disabled><option selected>eBay</option></select></div>
+    <div class="form-item"><label>映射规则/说明</label><input class="input" value="${r.rule}"></div>
+    <div class="form-item"><label><span class="req">*</span>生效时间</label><input class="input" type="date" value="${r.eff}"></div>
+    <div class="form-item full"><label><span class="req">*</span>状态</label><select class="select" style="width:160px"><option ${r.st==='启用'?'selected':''}>启用</option><option ${r.st==='停用'?'selected':''}>停用</option></select><div class="hint">冲突校验：同一「订单费用项+平台」只允许一条启用记录</div></div>
+  </div>`;
+  const footer=`<button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();toast('${i>=0?'映射已更新':'映射已新增'}')">保存</button>`;
+  openModal(i>=0?'编辑订单费用映射':'新增订单费用映射',body,footer,{w:720});
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+renderNav();
+render();
+</script>
+</body>
+</html>
